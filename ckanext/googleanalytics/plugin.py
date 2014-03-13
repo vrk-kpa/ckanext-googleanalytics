@@ -8,6 +8,8 @@ import pylons
 import ckan.lib.helpers as h
 import ckan.plugins as p
 import gasnippet
+from ckan.common import request
+from ckan.lib import helpers
 
 log = logging.getLogger('ckanext.googleanalytics')
 
@@ -37,6 +39,17 @@ class GoogleAnalyticsPlugin(p.SingletonPlugin):
                 'googleanalytics.domain', 'auto')
         self.googleanalytics_javascript_url = h.url_for_static(
                 '/scripts/ckanext-googleanalytics.js')
+        self.googleanalytics_type = config.get('googleanalytics.type', 'classic')
+
+        if self.googleanalytics_type == 'universal':
+            self.analytics_html = 'googleanalytics/snippets/googleanalytics_header_ua.html'
+            self.analytics_js = 'ckanext-googleanalytics/googleanalytics_event_tracking_ua.js'
+        elif self.googleanalytics_type == 'classic':
+            self.analytics_html = 'googleanalytics/snippets/googleanalytics_header.html'
+            self.analytics_js = 'ckanext-googleanalytics/googleanalytics_event_tracking.js'
+        else:
+            raise GoogleAnalyticsException("Invalid 'googleanalytics.type' value '%s'. Should be "
+                                           "'classic' or 'universal'." % self.googleanalytics_type)
 
         # If resource_prefix is not in config file then write the default value
         # to the config dict, otherwise templates seem to get 'true' when they
@@ -163,7 +176,12 @@ class GoogleAnalyticsPlugin(p.SingletonPlugin):
         See ITemplateHelpers.
 
         '''
-        return {'googleanalytics_header': self.googleanalytics_header}
+        return {'googleanalytics_header': self.googleanalytics_header,
+                'googleanalytics_event_tracking': self.googleanalytics_event_tracking}
+
+    def googleanalytics_event_tracking(self):
+        '''Return correct event tracking resource for CKAN 2.0 templates.'''
+        return helpers.include_resource(self.analytics_js)
 
     def googleanalytics_header(self):
         '''Render the googleanalytics_header snippet for CKAN 2.0 templates.
@@ -173,7 +191,9 @@ class GoogleAnalyticsPlugin(p.SingletonPlugin):
         templates in this extension, see ITemplateHelpers.
 
         '''
+
+        domain = self.googleanalytics_domain if self.googleanalytics_domain != 'request' else request.environ['HTTP_HOST']
         data = {'googleanalytics_id': self.googleanalytics_id,
-                'googleanalytics_domain': self.googleanalytics_domain}
-        return p.toolkit.render_snippet(
-            'googleanalytics/snippets/googleanalytics_header.html', data)
+                'googleanalytics_domain': domain}
+
+        return p.toolkit.render_snippet(self.analytics_html, data)

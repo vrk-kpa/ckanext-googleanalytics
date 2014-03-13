@@ -84,6 +84,7 @@ Installation
       googleanalytics_resource_prefix = /downloads/
       googleanalytics.domain = auto
       googleanalytics.track_events = false
+      googleanalytics.type = classic
 
    ``resource_prefix`` is an arbitrary identifier so that we can query
    for downloads in Google Analytics.  It can theoretically be any
@@ -94,10 +95,13 @@ Installation
    ``domain`` allows you to specify a domain against which Analytics
    will track users.  You will usually want to leave this as ``auto``;
    if you are tracking users from multiple subdomains, you might want
-   to specify something like ``.mydomain.com``.
+   to specify something like ``.mydomain.com``. If you set this to
+   ``request`` then dynamic HTTP_HOST value from CKAN is used.
    See `Google's documentation
    <http://code.google.com/apis/analytics/docs/gaJS/gaJSApiDomainDirectory.html#_gat.GA_Tracker_._setDomainName>`_
    for more info.
+   ``type`` defines if ``classic`` or newer ``universal`` analytics is
+   used.
 
    If ``track_events`` is set, Google Analytics event tracking will be
    enabled. *CKAN 1.x only.* *Note that event tracking for resource downloads
