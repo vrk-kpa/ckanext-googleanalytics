@@ -7,4 +7,6 @@ syntax: glob
 build/
 dist/
 credentials.json
-token.dat
+token.dat.project
+.pydevproject
+.project
