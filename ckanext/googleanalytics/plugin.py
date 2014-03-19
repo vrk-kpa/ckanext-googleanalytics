@@ -181,7 +181,7 @@ class GoogleAnalyticsPlugin(p.SingletonPlugin):
 
     def googleanalytics_event_tracking(self):
         '''Return correct event tracking resource for CKAN 2.0 templates.'''
-        return helpers.include_resource(self.analytics_js)
+        return self.analytics_js
 
     def googleanalytics_header(self):
         '''Render the googleanalytics_header snippet for CKAN 2.0 templates.

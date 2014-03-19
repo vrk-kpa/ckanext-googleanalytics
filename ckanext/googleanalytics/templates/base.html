@@ -10,7 +10,7 @@
 {% block scripts %}
   {{ super() }}
   {% block googleanalytics_event_tracking %}
-    {{ h.googleanalytics_event_tracking() }}
+    {% resource h.googleanalytics_event_tracking() %}
     <div class="js-hide" data-module="google-analytics"
       data-module-googleanalytics_resource_prefix="{{ g.googleanalytics_resource_prefix }}">
     </div>
