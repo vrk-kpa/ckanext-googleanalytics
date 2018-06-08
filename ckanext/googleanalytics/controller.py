@@ -14,6 +14,8 @@ from paste.util.multidict import MultiDict
 
 from ckan.controllers.api import ApiController
 from ckan.controllers.package import PackageController
+import ckan.plugins as p
+
 
 log = logging.getLogger('ckanext.googleanalytics')
 
@@ -105,9 +107,18 @@ class GAApiController(ApiController):
         self._post_analytics(c.user, register, "search", id)
 
         return ApiController.search(self, ver, register)
-        
 
-class GAResourceController(PackageController):
+
+# Ugly hack since ckanext-cloudstorage replaces resource_download action
+# and we can't inherit from the correct controller,
+# googleanalytics needs to before cloudstorage in plugin list
+OptionalController = PackageController
+if p.plugin_loaded('cloudstorage'):
+    from ckanext.cloudstorage.controller import StorageController
+    OptionalController = StorageController
+
+
+class GAResourceController(OptionalController):
     # intercept API calls to record via google analytics
     def _post_analytics(
             self, user, request_obj_type, request_function, request_id):
@@ -129,5 +140,5 @@ class GAResourceController(PackageController):
 
     def resource_download(self, id, resource_id, filename=None):
         self._post_analytics(c.user, "Resource", "Download", resource_id)
-        return PackageController.resource_download(self, id, resource_id,
+        return OptionalController.resource_download(self, id, resource_id,
                                                    filename)

@@ -106,7 +106,7 @@ class PackageStats(Base):
         resource_visits = resource_visits_dict.get('resources', 0)
         download_count = resource_visits_dict.get('tot_visits', 0)
 
-        now = datetime.now()
+        now = datetime.now() - timedelta(days=1)
 
         #Creates a date object for the last 30 days in the format (YEAR, MONTH, DAY)
         for d in range(0, 30):
@@ -130,7 +130,7 @@ class PackageStats(Base):
                 #Build temporary match 
                 visit_item = next((x for x in visit_list if x['year'] == visit_date.year and x['month'] == visit_date.month and x['day'] == visit_date.day), None)
                 if visit_item:
-                    visit_item['downloads'] = r['visits']
+                    visit_item['downloads'] += r['visits']
 
         results = {
             "visits": visit_list,
@@ -232,13 +232,6 @@ class ResourceStats(Base):
         return visits
 
         
-
-    @classmethod
-    def get_top(cls, limit=20):
-        resource_stats = model.Session.query(cls).order_by(cls.visit_date.desc()).limit(limit).all()
-        return ResourceStats.convert_to_dict(resource_stats,None)
-
-
     @classmethod
     def get_top(cls, limit=20):
         resource_stats = []
@@ -315,11 +308,11 @@ class ResourceStats(Base):
     @classmethod
     def get_all_visits(cls,id):
         visits_dict = ResourceStats.get_last_visits_by_id(id)
-        count = visits_dict.get('tot_visits',0)
-        visits = visits_dict.get('resources',[])
+        count = visits_dict.get('tot_visits', 0)
+        visits = visits_dict.get('resources', [])
         visit_list = []
 
-        now = datetime.now()
+        now = datetime.now() -timedelta(days=1)
 
         #Creates a temporary date object for the last 30 days in the format (YEAR, MONTH, DAY, #visits this day)
         #If there is no entry for a certain date should return 0 visits
