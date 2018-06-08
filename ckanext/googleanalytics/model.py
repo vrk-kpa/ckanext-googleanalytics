@@ -12,7 +12,7 @@ log = __import__('logging').getLogger(__name__)
 Base = declarative_base()
 
 class PackageStats(Base):
-    """ 
+    """
     Contains stats for package (datasets)
     for GA tasks run against them
     Stores number of visits per all dates for each package.
@@ -22,7 +22,7 @@ class PackageStats(Base):
     package_id = Column(types.UnicodeText, nullable=False, index=True, primary_key=True)
     visit_date = Column(types.DateTime, default=datetime.now, primary_key=True)
     visits = Column(types.Integer)
-   
+
     @classmethod
     def get(cls, id):
         return model.Session.query(cls).filter(cls.package_id == id).first()
@@ -30,7 +30,7 @@ class PackageStats(Base):
     @classmethod
     def update_visits(cls, item_id, visit_date, visits):
         '''
-        Updates the number of visits for a certain package_id 
+        Updates the number of visits for a certain package_id
         or creates a new one if it is the first visit for a certain date
 
         :param item_id: package_id
@@ -58,6 +58,26 @@ class PackageStats(Base):
         return pack_name
 
     @classmethod
+    def get_visits_during_year(cls, resource_id, year):
+        '''
+        Returns number of visitors during one calendar yearself.
+        For example, calling this with parameter year=2017 would returned
+        the number of visitors during the year 2017.
+
+        :param resource_id: ID of the resource
+        :param year: Year as an integer
+        :return: Number of visitors during the year
+        '''
+        start_date = date(year, 1, 1)
+        end_date = date(year, 12, 31)
+        package_visits = model.Session.query(cls).filter(cls.package_id == resource_id) \
+                                                 .filter(cls.visit_date >= start_date) \
+                                                 .filter(cls.visit_date <= end_date) \
+                                                 .all()
+
+        return package_visits
+
+    @classmethod
     def get_last_visits_by_id(cls, resource_id, num_days=30):
         start_date = datetime.now() - timedelta(num_days)
         package_visits = model.Session.query(cls).filter(cls.package_id == resource_id).filter(cls.visit_date >= start_date).all()
@@ -69,19 +89,19 @@ class PackageStats(Base):
             visits = PackageStats.convert_to_dict(package_visits, total_visits)
 
         return visits
-    
+
 
     @classmethod
     def get_top(cls, limit=20):
         package_stats = []
         #TODO: Reimplement in more efficient manner if needed (using RANK OVER and PARTITION in raw sql)
         unique_packages = model.Session.query(cls.package_id, func.count(cls.visits)).group_by(cls.package_id).order_by(func.count(cls.visits).desc()).limit(limit).all()
-        #Adding last date associated to this package stat and filtering out private and deleted packages 
+        #Adding last date associated to this package stat and filtering out private and deleted packages
         if unique_packages is not None:
             for package in unique_packages:
                 package_id = package[0]
                 visits = package[1]
-                
+
                 tot_package = model.Session.query(model.Package).filter(model.Package.id == package_id).filter_by(state='active').filter_by(private=False).first()
                 if tot_package is None:
                     continue
@@ -112,22 +132,22 @@ class PackageStats(Base):
         for d in range(0, 30):
             curr = now - timedelta(d)
             visit_list.append({'year': curr.year, 'month': curr.month, 'day': curr.day, 'visits': 0, "downloads": 0})
-            
+
         for t in visits:
             visit_date_str = t['visit_date']
-            if visit_date_str is not None:    
+            if visit_date_str is not None:
                 visit_date = datetime.strptime(visit_date_str, "%d-%m-%Y")
-                #Build temporary match 
+                #Build temporary match
                 visit_item = next((x for x in visit_list if x['year'] == visit_date.year and x['month'] == visit_date.month and x['day'] == visit_date.day), None)
                 if visit_item:
                     visit_item['visits'] = t['visits']
-                
+
 
         for r in resource_visits:
             visit_date_str = r['visit_date']
-            if visit_date_str is not None:    
+            if visit_date_str is not None:
                 visit_date = datetime.strptime(visit_date_str, "%d-%m-%Y")
-                #Build temporary match 
+                #Build temporary match
                 visit_item = next((x for x in visit_list if x['year'] == visit_date.year and x['month'] == visit_date.month and x['day'] == visit_date.day), None)
                 if visit_item:
                     visit_item['downloads'] += r['visits']
@@ -154,7 +174,7 @@ class PackageStats(Base):
         visits = []
         for resource in resource_stats:
             visits.append(PackageStats.as_dict(resource))
-        
+
         results = {
            "packages": visits,
         }
@@ -171,7 +191,7 @@ class PackageStats(Base):
             return result.visit_date
 
 class ResourceStats(Base):
-    """ 
+    """
     Contains stats for resources associated to a certain dataset/package
     for GA tasks run against them
     Stores number of visits i.e. downloads per all dates for each package.
@@ -213,7 +233,7 @@ class ResourceStats(Base):
         resource = model.Session.query(model.Resource).filter(model.Resource.id == resource_id).first()
         res_name = None
         res_package_name = None
-        res_package_id = None    
+        res_package_id = None
         if resource is not None:
             res_package_name = resource.package.title or resource.package.name
             res_package_id = resource.package.name
@@ -231,18 +251,18 @@ class ResourceStats(Base):
             visits = ResourceStats.convert_to_dict(resource_visits, total_visits)
         return visits
 
-        
+
     @classmethod
     def get_top(cls, limit=20):
         resource_stats = []
         #TODO: Reimplement in more efficient manner if needed (using RANK OVER and PARTITION in raw sql)
         unique_resources = model.Session.query(cls.resource_id, func.count(cls.visits)).group_by(cls.resource_id).order_by(func.count(cls.visits).desc()).limit(limit).all()
-        #Adding last date associated to this package stat and filtering out private and deleted packages 
+        #Adding last date associated to this package stat and filtering out private and deleted packages
         if unique_resources is not None:
             for resource in unique_resources:
                 resource_id = resource[0]
                 visits = resource[1]
-                #TODO: Check if associated resource is private 
+                #TODO: Check if associated resource is private
                 resource = model.Session.query(model.Resource).filter(model.Resource.id == resource_id).filter_by(state='active').first()
                 if resource is None:
                     continue
@@ -291,7 +311,7 @@ class ResourceStats(Base):
         visits = ResourceStats.convert_to_dict(resource_stats, total_visits)
 
         return visits
-    
+
 
     @classmethod
     def get_last_visits_by_dataset_id(cls, package_id, num_days=30):
@@ -320,16 +340,16 @@ class ResourceStats(Base):
             curr = now - timedelta(d)
             visit_list.append({'year': curr.year, 'month': curr.month, 'day': curr.day, 'visits': 0})
 
-        
+
         for t in visits:
             visit_date_str = t['visit_date']
-            if visit_date_str is not None:    
+            if visit_date_str is not None:
                 visit_date = datetime.strptime(visit_date_str, "%d-%m-%Y")
-                #Build temporary match 
+                #Build temporary match
                 visit_item = next((x for x in visit_list if x['year'] == visit_date.year and x['month'] == visit_date.month and x['day'] == visit_date.day), None)
                 if visit_item:
                     visit_item['visits'] = t['visits']
-                
+
         results = {
             "downloads": visit_list,
             "count": count
@@ -340,5 +360,3 @@ class ResourceStats(Base):
 def init_tables(engine):
     Base.metadata.create_all(engine)
     log.info('Google analytics database tables are set-up')
-
-
