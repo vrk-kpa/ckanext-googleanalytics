@@ -68,8 +68,8 @@ class PackageStats(Base):
         :param year: Year as an integer
         :return: Number of visitors during the year
         '''
-        start_date = date(year, 1, 1)
-        end_date = date(year, 12, 31)
+        start_date = datetime(year, 1, 1)
+        end_date = datetime(year, 12, 31)
         package_visits = model.Session.query(cls).filter(cls.package_id == resource_id) \
                                                  .filter(cls.visit_date >= start_date) \
                                                  .filter(cls.visit_date <= end_date) \
