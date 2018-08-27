@@ -326,6 +326,21 @@ class ResourceStats(Base):
         return visits
 
     @classmethod
+    def get_visits_during_last_calendar_year_by_dataset_id(cls, package_id):
+        # Returns a list of visits during the last calendar year. 
+        last_year = datetime.now().year - 1
+        first_day = datetime(year=last_year, day=1, month=1)
+        last_day = datetime(year=last_year, day=31, month=12)
+        return cls.get_visits_by_dataset_id_between_two_dates(package_id, first_day, last_day)
+
+    @classmethod
+    def get_visits_by_dataset_id_between_two_dates(cls, package_id, start_date, end_date):
+        # Returns a list of visits between the dates
+        subquery = model.Session.query(model.Resource.id).filter(model.Resource.package_id == package_id).subquery()
+        visits = model.Session.query(cls).filter(cls.resource_id.in_(subquery)).filter(cls.visit_date >= start_date).filter(cls.visit_date <= end_date).all()
+        return visits
+
+    @classmethod
     def get_all_visits(cls,id):
         visits_dict = ResourceStats.get_last_visits_by_id(id)
         count = visits_dict.get('tot_visits', 0)
