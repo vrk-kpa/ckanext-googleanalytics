@@ -21,9 +21,10 @@ class GoogleAnalyticsException(Exception):
 
 class AnalyticsPostThread(threading.Thread):
     """Threaded Url POST"""
-    def __init__(self, queue):
+    def __init__(self, queue, test_mode=False):
         threading.Thread.__init__(self)
         self.queue = queue
+        self.test_mode = test_mode
 
     def run(self):
         while True:
@@ -31,14 +32,17 @@ class AnalyticsPostThread(threading.Thread):
             data_dict = self.queue.get()
 
             data = urllib.urlencode(data_dict)
-            log.debug("Sending API event to Google Analytics: " + data)
             # send analytics
-            urllib2.urlopen(
-                "http://www.google-analytics.com/collect",
-                data,
-                # timeout in seconds
-                # https://docs.python.org/2/library/urllib2.html#urllib2.urlopen
-                10)
+            if self.test_mode:
+                log.info("Would send API event to Google Analytics: %s", data)
+            else:
+                log.debug("Sending API event to Google Analytics: %s", data)
+                urllib2.urlopen(
+                    "http://www.google-analytics.com/collect",
+                    data,
+                    # timeout in seconds
+                    # https://docs.python.org/2/library/urllib2.html#urllib2.urlopen
+                    10)
 
             # signals to queue job is done
             self.queue.task_done()
@@ -59,12 +63,17 @@ class GoogleAnalyticsPlugin(p.SingletonPlugin):
         See IConfigurable.
 
         '''
-        if 'googleanalytics.id' not in config:
-            msg = "Missing googleanalytics.id in config"
-            raise GoogleAnalyticsException(msg)
-        self.googleanalytics_id = config['googleanalytics.id']
-        self.googleanalytics_domain = config.get(
-                'googleanalytics.domain', 'auto')
+        test_mode = config.get('googleanalytics.test_mode')
+        if test_mode:
+            self.googleanalytics_id = 'test-id'
+            self.googleanalytics_domain = 'test-domain'
+        else:
+            if 'googleanalytics.id' not in config:
+                msg = "Missing googleanalytics.id in config"
+                raise GoogleAnalyticsException(msg)
+            self.googleanalytics_id = config['googleanalytics.id']
+            self.googleanalytics_domain = config.get(
+                    'googleanalytics.domain', 'auto')
         
         # If resource_prefix is not in config file then write the default value
         # to the config dict, otherwise templates seem to get 'true' when they
@@ -84,7 +93,7 @@ class GoogleAnalyticsPlugin(p.SingletonPlugin):
         
         # spawn a pool of 5 threads, and pass them queue instance
         for i in range(5):
-            t = AnalyticsPostThread(self.analytics_queue)
+            t = AnalyticsPostThread(self.analytics_queue, test_mode=test_mode)
             t.setDaemon(True)
             t.start()
 
@@ -98,55 +107,15 @@ class GoogleAnalyticsPlugin(p.SingletonPlugin):
         See IRoutes.
 
         '''
-        # Helpers to reduce code clutter
-        GET = dict(method=['GET'])
-        PUT = dict(method=['PUT'])
-        POST = dict(method=['POST'])
-        DELETE = dict(method=['DELETE'])
         GET_POST = dict(method=['GET', 'POST'])
-        # intercept API calls that we want to capture analytics on
-        register_list = [
-            'package',
-            'dataset',
-            'resource',
-            'tag',
-            'group',
-            'related',
-            'revision',
-            'licenses',
-            'rating',
-            'user',
-            'activity'
-        ]
-        register_list_str = '|'.join(register_list)
-        # /api ver 3 or none
+
         with SubMapper(map, controller='ckanext.googleanalytics.controller:GAApiController', path_prefix='/api{ver:/3|}',
                     ver='/3') as m:
-            m.connect('/action/{logic_function}', action='action',
-                      conditions=GET_POST)
-
-        # /api ver 1, 2, 3 or none
-        with SubMapper(map, controller='ckanext.googleanalytics.controller:GAApiController', path_prefix='/api{ver:/1|/2|/3|}',
-                       ver='/1') as m:
-            m.connect('/search/{register}', action='search')
-
-        # /api/rest ver 1, 2 or none
-        with SubMapper(map, controller='ckanext.googleanalytics.controller:GAApiController', path_prefix='/api{ver:/1|/2|}',
-                       ver='/1', requirements=dict(register=register_list_str)
-                       ) as m:
-
-            m.connect('/rest/{register}', action='list', conditions=GET)
-            m.connect('/rest/{register}', action='create', conditions=POST)
-            m.connect('/rest/{register}/{id}', action='show', conditions=GET)
-            m.connect('/rest/{register}/{id}', action='update', conditions=PUT)
-            m.connect('/rest/{register}/{id}', action='update', conditions=POST)
-            m.connect('/rest/{register}/{id}', action='delete', conditions=DELETE)
+            m.connect('/action/{logic_function}', action='action', conditions=GET_POST)
 
         with SubMapper(map, controller='ckanext.googleanalytics.controller:GAResourceController') as m:
-            m.connect('/dataset/{id}/resource/{resource_id}/download',
-                    action='resource_download')
-            m.connect('/dataset/{id}/resource/{resource_id}/download/{filename}',
-                    action='resource_download')
+            m.connect('/dataset/{id}/resource/{resource_id}/download', action='resource_download')
+            m.connect('/dataset/{id}/resource/{resource_id}/download/{filename}', action='resource_download')
             
         return map
 
