@@ -19,94 +19,36 @@ import ckan.plugins as p
 
 log = logging.getLogger('ckanext.googleanalytics')
 
+def _post_analytics(
+        user, request_obj_type, request_function, request_description, request_id, environ=None):
+    environ = environ or c.environ
+    if config.get('googleanalytics.id') or config.get('googleanalytics.test_mode'):
+        data_dict = {
+            "v": 1,
+            "tid": config.get('googleanalytics.id'),
+            "cid": hashlib.md5(user).hexdigest(),
+            # customer id should be obfuscated
+            "t": "event",
+            "dh": environ['HTTP_HOST'],
+            "dp": environ['PATH_INFO'],
+            "dr": environ.get('HTTP_REFERER', ''),
+            "ec": request_description,
+            "ea": request_obj_type+request_function,
+            "el": request_id,
+        }
+        plugin.GoogleAnalyticsPlugin.analytics_queue.put(data_dict)
+
+
 class GAApiController(ApiController):
+
     # intercept API calls to record via google analytics
-    def _post_analytics(
-            self, user, request_obj_type, request_function, request_id):
-        if config.get('googleanalytics.id'):
-            data_dict = {
-                "v": 1,
-                "tid": config.get('googleanalytics.id'),
-                "cid": hashlib.md5(user).hexdigest(),
-                # customer id should be obfuscated
-                "t": "event",
-                "dh": c.environ['HTTP_HOST'],
-                "dp": c.environ['PATH_INFO'],
-                "dr": c.environ.get('HTTP_REFERER', ''),
-                "ec": "CKAN API Request",
-                "ea": request_obj_type+request_function,
-                "el": request_id,
-            }
-            plugin.GoogleAnalyticsPlugin.analytics_queue.put(data_dict)
-
     def action(self, logic_function, ver=None):
-        try:
-            function = logic.get_action(logic_function)
-            side_effect_free = getattr(function, 'side_effect_free', False)
-            request_data = self._get_request_data(
-                try_url_params=side_effect_free)
-            if isinstance(request_data, dict):
-                id = request_data.get('id', '')
-                if 'q' in request_data:
-                    id = request_data['q']
-                if 'query' in request_data:
-                    id = request_data['query']
-                self._post_analytics(c.user, logic_function, '', id)
-        except Exception, e:
-            log.debug(e)
-            pass
-
+        if c.environ['SERVER_NAME'] not in ('localhost', '127.0.0.1', '::1'):
+            request_query = c.environ.get('paste.parsed_dict_querystring', ({},))[0]
+            request_id = request_query.get('query', request_query.get('q', ''))
+            request_description = "CKAN API Request"
+            _post_analytics(c.user or 'anonymous', 'action', logic_function, request_description, request_id)
         return ApiController.action(self, logic_function, ver)
-
-    def list(self, ver=None, register=None,
-             subregister=None, id=None):
-        self._post_analytics(c.user,
-                             register +
-                             ("_"+str(subregister) if subregister else ""),
-                             "list",
-                             id)
-        return ApiController.list(self, ver, register, subregister, id)
-
-    def show(self, ver=None, register=None,
-             subregister=None, id=None, id2=None):
-        self._post_analytics(c.user,
-                             register +
-                             ("_"+str(subregister) if subregister else ""),
-                             "show",
-                             id)
-        return ApiController.show(self, ver, register, subregister, id, id2)
-
-    def update(self, ver=None, register=None,
-               subregister=None, id=None, id2=None):
-        self._post_analytics(c.user,
-                             register +
-                             ("_"+str(subregister) if subregister else ""),
-                             "update",
-                             id)
-        return ApiController.update(self, ver, register, subregister, id, id2)
-
-    def delete(self, ver=None, register=None,
-               subregister=None, id=None, id2=None):
-        self._post_analytics(c.user,
-                             register +
-                             ("_"+str(subregister) if subregister else ""),
-                             "delete",
-                             id)
-        return ApiController.delete(self, ver, register, subregister, id, id2)
-
-    def search(self, ver=None, register=None):
-        id = None
-        try:
-            params = MultiDict(self._get_search_params(request.params))
-            if 'q' in params.keys():
-                id = params['q']
-            if 'query' in params.keys():
-                id = params['query']
-        except ValueError, e:
-            pass
-        self._post_analytics(c.user, register, "search", id)
-
-        return ApiController.search(self, ver, register)
 
 
 # Ugly hack since ckanext-cloudstorage replaces resource_download action
@@ -120,25 +62,8 @@ if p.plugin_loaded('cloudstorage'):
 
 class GAResourceController(OptionalController):
     # intercept API calls to record via google analytics
-    def _post_analytics(
-            self, user, request_obj_type, request_function, request_id):
-        if config.get('googleanalytics.id'):
-            data_dict = {
-                "v": 1,
-                "tid": config.get('googleanalytics.id'),
-                "cid": hashlib.md5(user).hexdigest(),
-                # customer id should be obfuscated
-                "t": "event",
-                "dh": c.environ['HTTP_HOST'],
-                "dp": c.environ['PATH_INFO'],
-                "dr": c.environ.get('HTTP_REFERER', ''),
-                "ec": "CKAN Resource Download Request",
-                "ea": request_obj_type+request_function,
-                "el": request_id,
-            }
-            plugin.GoogleAnalyticsPlugin.analytics_queue.put(data_dict)
 
     def resource_download(self, id, resource_id, filename=None):
-        self._post_analytics(c.user, "Resource", "Download", resource_id)
-        return OptionalController.resource_download(self, id, resource_id,
-                                                   filename)
+        if c.environ['SERVER_NAME'] not in ('localhost', '127.0.0.1', '::1'):
+            _post_analytics(c.user, "Resource", "Download", "CKAN Resource Download Request", resource_id)
+        return OptionalController.resource_download(self, id, resource_id, filename)
