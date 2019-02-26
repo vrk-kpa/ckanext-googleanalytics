@@ -1,42 +1,50 @@
 import os
 import httplib2
 from apiclient.discovery import build
-from oauth2client.client import flow_from_clientsecrets
-from oauth2client.file import Storage
-from oauth2client.tools import run_flow
+from oauth2client.service_account import ServiceAccountCredentials
 
 from pylons import config
 
+def get_service(api_name, api_version, scopes, key_file_location):
+    """Get a service that communicates to a Google API.
 
-def _prepare_credentials(token_filename, credentials_filename):
+    Args:
+        api_name: The name of the api to connect to.
+        api_version: The api version to connect to.
+        scopes: A list auth scopes to authorize for the application.
+        key_file_location: The path to a valid service account JSON key file.
+
+    Returns:
+        A service that is connected to the specified API.
     """
-    Either returns the user's oauth credentials or uses the credentials
-    file to generate a token (by forcing the user to login in the browser)
+
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(
+            key_file_location, scopes=scopes)
+
+    # Build the service object.
+    service = build(api_name, api_version, credentials=credentials, cache_discovery=False)
+
+    return service
+
+# https://developers.google.com/analytics/devguides/reporting/core/v3/quickstart/service-py
+def init_service(credentials_file):
     """
-    storage = Storage(token_filename)
-    credentials = storage.get()
-
-    if credentials is None or credentials.invalid:
-        flow = flow_from_clientsecrets(credentials_filename,
-                scope='https://www.googleapis.com/auth/analytics.readonly',
-                message="Can't find the credentials file")
-        credentials = run_flow(flow, storage)
-
-    return credentials
-
-
-def init_service(token_file, credentials_file):
+    Given a file containing the service accounts credentials
+    will return a service object representing the analytics API.
     """
-    Given a file containing the user's oauth token (and another with
-    credentials in case we need to generate the token) will return a
-    service object representing the analytics API.
-    """
-    http = httplib2.Http()
 
-    credentials = _prepare_credentials(token_file, credentials_file)
-    http = credentials.authorize(http)  # authorize the http object
+    # Define the auth scopes to request.
+    scope = 'https://www.googleapis.com/auth/analytics.readonly'
 
-    return build('analytics', 'v3', http=http)
+    # Authenticate and construct service.
+    service = get_service(
+            api_name='analytics',
+            api_version='v3',
+            scopes=[scope],
+            key_file_location=credentials_file)
+
+
+    return service
 
 
 def get_profile_id(service):
@@ -52,17 +60,22 @@ def get_profile_id(service):
     if not accounts.get('items'):
         return None
 
+    # These values need to be set in the .ini file
+    # Name of analytics account
     accountName = config.get('googleanalytics.account')
+    # Id of analytics property or app
     webPropertyId = config.get('googleanalytics.id')
+
+    # Get id for analytics account based on the name
     for acc in accounts.get('items'):
         if acc.get('name') == accountName:
             accountId = acc.get('id')
 
-    webproperties = service.management().webproperties().list(accountId=accountId).execute()
-
+    # Get all analytics views
     profiles = service.management().profiles().list(
         accountId=accountId, webPropertyId=webPropertyId).execute()
 
+    # Return the first view id from analytics
     if profiles.get('items'):
         return profiles.get('items')[0].get('id')
 

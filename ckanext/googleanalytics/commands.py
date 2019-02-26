@@ -28,15 +28,15 @@ class GACommand(p.toolkit.CkanCommand):
          - Creates the database tables that Google analytics expects for storing
          results
 
-       paster googleanalytics getauthtoken <credentials_file>
-         - Fetches the google auth token 
+       paster googleanalytics initservice <credentials_file>
+         - Initializes the service 
            Where <credentials_file> is the file name containing the details
-          for the service (obtained from https://code.google.com/apis/console).
+           for the service (obtained from https://console.developers.google.com/iam-admin/serviceaccounts).
            By default this is set to credentials.json
 
-       paster googleanalytics loadanalytics <token_file> [start_date]
+       paster googleanalytics loadanalytics <credentials_file> [start_date]
          - Parses data from Google Analytics API and stores it in our database
-          <token file> specifies the OAUTH token file
+          <credentials file> specifies the service credentials file
           [date] specifies start date for retrieving analytics data YYYY-MM-DD format
     """
     summary = __doc__.split('\n')[0]
@@ -65,33 +65,34 @@ class GACommand(p.toolkit.CkanCommand):
 
         if cmd == 'init':
             self.init_db()
-        elif cmd == 'getauthtoken':
-            self.getauthtoken(self.args)
+        elif cmd == 'initservice':
+            self.init_service(self.args)
         elif cmd == 'loadanalytics':
             self.load_analytics(self.args)
         else:
             self.log.error('Command "%s" not recognized' %(cmd,))
 
-    def getauthtoken(self, args):
-        """
-        In this case we don't want a valid service, but rather just to
-        force the user through the auth flow. We allow this to complete to
-        act as a form of verification instead of just getting the token and
-        assuming it is correct.
-        """
-        from ga_auth import init_service
-        if len(args) > 2:
-            raise Exception('Too many arguments')
-        credentials_file = None
-        if len(args) == 2:
-           credentails_file = args[1]
-        init_service('token.dat', credentials_file if credentials_file else 'credentials.json')
-
-
     def init_db(self):
         from ckanext.googleanalytics.model import init_tables
         init_tables(model.meta.engine)
 
+    def init_service(self, args):
+        from ga_auth import init_service
+
+        if len(args) == 1:
+            raise Exception("Missing credentials file")
+        credentialsfile = args[1]
+        if not os.path.exists(credentialsfile):
+            raise Exception('Cannot find the credentials file %s' % args[1])
+        
+        try:
+            self.service = init_service(args[1])
+        except TypeError:
+            print ('Have you correctly run the init service task and '
+                   'specified the correct file here')
+            raise Exception('Unable to create a service')
+
+        return self.service
 
     def load_analytics(self, args):
         """
@@ -148,20 +149,10 @@ class GACommand(p.toolkit.CkanCommand):
           
     def parse_and_save(self, args):
         """Grab raw data from Google Analytics and save to the database"""
-        from ga_auth import (init_service, get_profile_id)
+        from ga_auth import get_profile_id
 
-        if len(args) == 1:
-            raise Exception("Missing token file")
-        tokenfile = args[1]
-        if not os.path.exists(tokenfile):
-            raise Exception('Cannot find the token file %s' % args[1])
+        self.init_service(args)
 
-        try:
-            self.service = init_service(args[1], None)
-        except TypeError:
-            print ('Have you correctly run the getauthtoken task and '
-                   'specified the correct file here')
-            raise Exception('Unable to create a service')
         self.profile_id = get_profile_id(self.service)
         if len(args) > 3:
             raise Exception('Too many arguments')
