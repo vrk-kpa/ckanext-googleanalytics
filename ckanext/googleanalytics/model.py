@@ -371,6 +371,107 @@ class ResourceStats(Base):
         }
         return results
 
+class VisitorLocationStats(Base):
+    """
+    Contains stats for visitors locations
+    Stores number of sessions from different countries.
+    """
+    __tablename__ = 'visitor_location_stats'
+
+    id = Column(types.Integer, primary_key=True)
+    location_name = Column(types.UnicodeText, nullable=False, primary_key=True)
+    visit_date = Column(types.DateTime, default=datetime.now, primary_key=True)
+    visits = Column(types.Integer)
+
+    @classmethod
+    def get(cls, name):
+        return model.Session.query(cls).filter(cls.location_name == name).first()
+
+    @classmethod
+    def update_visits(cls, item_name, visit_date, visits):
+        '''
+        Updates the number of visits for a certain resource_id
+
+        :param item_name: location_name
+        :param visit_date: last visit date
+        :param visits: number of visits until visit_date
+        :return: True for a successful update, otherwise False
+        '''
+        location = model.Session.query(cls).filter(cls.location_name == item_name).filter(cls.visit_date == visit_date).first()
+        print 'location: %s' % location
+        if location is None:
+            location = VisitorLocationStats(location_name=item_name, visit_date=visit_date, visits=visits)
+            model.Session.add(location)
+        else:
+            location.visits = visits
+            location.visit_date = visit_date
+
+        log.debug("Number of visits updated for location name: %s", item_name)
+        model.Session.flush()
+        return True
+    
+    @classmethod
+    def get_visits_during_year(cls, location_name, year):
+        '''
+        Returns number of visitors during one calendar yearself.
+        For example, calling this with parameter year=2017 would returned
+        the number of visitors during the year 2017.
+
+        :param location_name: name of the location
+        :param year: Year as an integer
+        :return: Number of visitors during the year
+        '''
+        start_date = datetime(year, 1, 1)
+        end_date = datetime(year, 12, 31)
+        location_visits = model.Session.query(cls).filter(cls.location_name == location_name) \
+                                                 .filter(cls.visit_date >= start_date) \
+                                                 .filter(cls.visit_date <= end_date) \
+                                                 .all()
+
+        return location_visits
+
+    @classmethod
+    def get_last_visits_by_name(cls, location_name, num_days=30):
+        start_date = datetime.now() - timedelta(num_days)
+        location_visits = model.Session.query(cls).filter(cls.location_name == location_name).filter(cls.visit_date >= start_date).all()
+        #Returns the total number of visits since the beggining of all times
+        total_visits = model.Session.query(func.sum(cls.visits)).filter(cls.location_name == location_name).scalar()
+        visits = {}
+
+        if total_visits is not None:
+            visits = VisitorLocationStats.convert_to_dict(location_visits, total_visits)
+
+        return visits
+
+    @classmethod
+    def as_dict(cls, res):
+        result = {}
+        result['location'] = location.name
+        result['id'] = location.id
+        result['visits'] = location.visits
+        result['visit_date'] = location.visit_date.strftime("%d-%m-%Y")
+        return result
+
+    @classmethod
+    def convert_to_dict(cls, location_stats, tot_visits):
+        visits = []
+        for location in location_stats:
+            visits.append(VisitorLocationStats.as_dict(location))
+
+        results = {
+           "location": visits,
+        }
+        if tot_visits is not None:
+            results["tot_visits"] = tot_visits
+        return results
+    
+    @classmethod
+    def get_latest_update_date(cls):
+        result = model.Session.query(cls).order_by(cls.visit_date.desc()).first()
+        if result is None:
+            return None
+        else:
+            return result.visit_date
 
 def init_tables(engine):
     Base.metadata.create_all(engine)
