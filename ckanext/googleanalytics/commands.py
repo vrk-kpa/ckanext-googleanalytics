@@ -70,6 +70,8 @@ class GACommand(p.toolkit.CkanCommand):
             self.init_service(self.args)
         elif cmd == 'loadanalytics':
             self.load_analytics(self.args)
+        elif cmd == 'test':
+            self.test_queries()
         else:
             self.log.error('Command "%s" not recognized' %(cmd,))
 
@@ -233,6 +235,8 @@ class GACommand(p.toolkit.CkanCommand):
                 for visit_date, count in visits.iteritems():
                     AudienceLocationDate.update_visits(location, visit_date, count)
                     self.log.info("Updated %s on %s with %s visits" % (location, visit_date, count))
+
+
         model.Session.commit()
         self.log.info("Successfully saved analytics query of type: %s" % querytype)
 
@@ -317,3 +321,6 @@ class GACommand(p.toolkit.CkanCommand):
         dates.append(floor_date)
 
         return dates
+
+    def test_queries(self):
+        AudienceLocationDate.get_visits_during_year(location_name='Finland', year=2018)

@@ -388,18 +388,18 @@ class AudienceLocation(Base):
         return model.Session.query(cls).filter(cls.id == id).first()
 
     @classmethod
-    def add_location(cls, name):
+    def update_location(cls, name):
         # Check if the location can be found
         location = model.Session.query(cls).filter(cls.location_name == location_name)
         if location is None:
             # Add location if not in db
             location = AudienceLocation(location_name=location_name)
             model.Session.add(location)
+            log.debug("New location added: %s", location_name)
         else:
-            log.debug("There is a location already with the name: %s", location_name)
-            return false
+            location.location_name = name
+            log.debug("Location name updated: %s", location_name)
 
-        log.debug("Number of visits updated for location name: %s", location_name)
         model.Session.flush()
         return True
 
@@ -448,25 +448,26 @@ class AudienceLocationDate(Base):
         model.Session.flush()
         return True
 
-    # @classmethod
-    # def get_visits_during_year(cls, location_name, year):
-    #     '''
-    #     Returns number of visitors during one calendar yearself.
-    #     For example, calling this with parameter year=2017 would returned
-    #     the number of visitors during the year 2017.
+    @classmethod
+    def get_visits_during_year(cls, location_name, year):
+        '''
+        Returns number of visitors during one calendar yearself.
+        For example, calling this with parameter year=2017 would returned
+        the number of visitors during the year 2017.
 
-    #     :param location_name: name of the location
-    #     :param year: Year as an integer
-    #     :return: Number of visitors during the year
-    #     '''
-    #     start_date = datetime(year, 1, 1)
-    #     end_date = datetime(year, 12, 31)
-    #     location_visits = model.Session.query(cls).filter(cls.location_name == location_name) \
-    #                                              .filter(cls.visit_date >= start_date) \
-    #                                              .filter(cls.visit_date <= end_date) \
-    #                                              .all()
-
-    #     return location_visits
+        :param location_name: name of the location
+        :param year: Year as an integer
+        :return: Number of visitors during the year
+        '''
+        start_date = datetime(year, 1, 1)
+        end_date = datetime(year, 12, 31)
+        location_id = model.Session.query(AudienceLocation).filter(AudienceLocation.location_name == location_name).first().id
+        location_visits = model.Session.query(func.sum(cls.visits)).filter(cls.location_id == location_id) \
+                                                 .filter(cls.date >= start_date) \
+                                                 .filter(cls.date <= end_date) \
+                                                 .scalar()
+        print '%s sessions from %s in year %i' % (location_visits, location_name, year)
+        return location_visits
 
     # @classmethod
     # def get_last_visits_by_name(cls, location_name, num_days=30):
