@@ -10,7 +10,7 @@ import ckan.model as model
 from ckan.logic.action import get
 
 import ckan.plugins as p
-from ckanext.googleanalytics.model import PackageStats, ResourceStats, VisitorLocationStats
+from ckanext.googleanalytics.model import PackageStats, ResourceStats, AudienceLocation, AudienceLocationDate
 
 PACKAGE_URL = '/dataset/'  # XXX get from routes...
 DEFAULT_RESOURCE_URL_TAG = '/download/'
@@ -119,6 +119,8 @@ class GACommand(p.toolkit.CkanCommand):
 
            {'identifier': 3}
         """
+        if not start_date:
+            start_date = datetime.datetime(2010, 1, 1)
         start_date = start_date.strftime("%Y-%m-%d")
         if not end_date:
             end_date = datetime.datetime.now()
@@ -156,8 +158,6 @@ class GACommand(p.toolkit.CkanCommand):
         if len(args) == 3:
             given_start_date = datetime.datetime.strptime(args[2], '%Y-%m-%d').date()
 
-        current = datetime.datetime.now()
-
         # list of queries to send to analytics
         queries = [{
             'type': 'package',
@@ -168,7 +168,7 @@ class GACommand(p.toolkit.CkanCommand):
             'dimensions': 'ga:pagePath, ga:date',
         }, {
             'type': 'visitorlocation',
-            'dates': self.get_dates_between_update(given_start_date, VisitorLocationStats.get_latest_update_date()),
+            'dates': self.get_dates_between_update(given_start_date, AudienceLocationDate.get_latest_update_date()),
             'filters': None,
             'metrics': 'ga:sessions',
             'sort': '-ga:sessions',
@@ -178,6 +178,7 @@ class GACommand(p.toolkit.CkanCommand):
         # loop through queries, parse and save them to db
         for query in queries:
             data = {}
+            current = datetime.datetime.now()
             print 'performing analytics query of type: %s' % query['type']
             for date in query['dates']:
                 # run query with current query values
@@ -230,7 +231,7 @@ class GACommand(p.toolkit.CkanCommand):
             for location, visits_collection in data[querytype].items():
                 visits = visits_collection.get('visits', {})
                 for visit_date, count in visits.iteritems():
-                    VisitorLocationStats.update_visits(location, visit_date, count)
+                    AudienceLocationDate.update_visits(location, visit_date, count)
                     self.log.info("Updated %s on %s with %s visits" % (location, visit_date, count))
         model.Session.commit()
         self.log.info("Successfully saved analytics query of type: %s" % querytype)

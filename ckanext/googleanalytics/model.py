@@ -1,8 +1,8 @@
 import uuid
 from datetime import datetime,timedelta
 
-from sqlalchemy import Column
-from sqlalchemy import types, func
+from sqlalchemy import types, func, Column, ForeignKey, Table
+from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
 import ckan.model as model
@@ -371,92 +371,130 @@ class ResourceStats(Base):
         }
         return results
 
-class VisitorLocationStats(Base):
+class AudienceLocation(Base):
     """
-    Contains stats for visitors locations
-    Stores number of sessions from different countries.
+    Contains stats for different visitors locations
+    Stores all different countries.
     """
-    __tablename__ = 'visitor_location_stats'
+    __tablename__ = 'audience_location'
 
-    id = Column(types.Integer, primary_key=True)
+    id = Column(types.Integer, primary_key=True, autoincrement=True, unique=True)
     location_name = Column(types.UnicodeText, nullable=False, primary_key=True)
-    visit_date = Column(types.DateTime, default=datetime.now, primary_key=True)
+
+    visits_by_date = relationship("AudienceLocationDate", back_populates="location")
+
+    @classmethod
+    def get(cls, id):
+        return model.Session.query(cls).filter(cls.id == id).first()
+
+    @classmethod
+    def add_location(cls, name):
+        # Check if the location can be found
+        location = model.Session.query(cls).filter(cls.location_name == location_name)
+        if location is None:
+            # Add location if not in db
+            location = AudienceLocation(location_name=location_name)
+            model.Session.add(location)
+        else:
+            log.debug("There is a location already with the name: %s", location_name)
+            return false
+
+        log.debug("Number of visits updated for location name: %s", location_name)
+        model.Session.flush()
+        return True
+
+class AudienceLocationDate(Base):
+    """
+    Contains stats for different visitors locations by date
+    Maps user amounts to dates and locations
+    """
+    __tablename__ = 'audience_location_date'
+
+    id = Column(types.Integer, primary_key=True, autoincrement=True, unique=True)
+    date = Column(types.DateTime, default=datetime.now, primary_key=True)
+    # TODO: add returning visits, new visits
     visits = Column(types.Integer)
+    location_id = Column(types.Integer, ForeignKey('audience_location.id'))
+
+    location = relationship("AudienceLocation", back_populates="visits_by_date")
 
     @classmethod
-    def get(cls, name):
-        return model.Session.query(cls).filter(cls.location_name == name).first()
-
-    @classmethod
-    def update_visits(cls, item_name, visit_date, visits):
+    def update_visits(cls, location_name, visit_date, visits):
         '''
-        Updates the number of visits for a certain resource_id
+        Updates the number of visits for a certain date and location
 
-        :param item_name: location_name
-        :param visit_date: last visit date
+        :param location_name: location_name
+        :param date: last visit date
         :param visits: number of visits until visit_date
         :return: True for a successful update, otherwise False
         '''
-        location = model.Session.query(cls).filter(cls.location_name == item_name).filter(cls.visit_date == visit_date).first()
-        print 'location: %s' % location
+        # find location_id by name
+        location = model.Session.query(AudienceLocation).filter(AudienceLocation.location_name == location_name).first()
+        # if not found add location as new location
         if location is None:
-            location = VisitorLocationStats(location_name=item_name, visit_date=visit_date, visits=visits)
+            location = AudienceLocation(location_name=location_name)
             model.Session.add(location)
-        else:
-            location.visits = visits
-            location.visit_date = visit_date
 
-        log.debug("Number of visits updated for location name: %s", item_name)
+        # find if location already has views for that date
+        location_by_date = model.Session.query(cls).filter(cls.location_id == location.id).filter(cls.date == visit_date).first()
+        # if not add them as a new row
+        if location_by_date is None:
+            location_by_date = AudienceLocationDate(location_id=location.id, date=visit_date, visits=visits)
+            model.Session.add(location_by_date)
+        else:
+            location_by_date.visits = visits
+
+        log.debug("Number of visits updated for location %s" % location_name)
         model.Session.flush()
         return True
-    
-    @classmethod
-    def get_visits_during_year(cls, location_name, year):
-        '''
-        Returns number of visitors during one calendar yearself.
-        For example, calling this with parameter year=2017 would returned
-        the number of visitors during the year 2017.
 
-        :param location_name: name of the location
-        :param year: Year as an integer
-        :return: Number of visitors during the year
-        '''
-        start_date = datetime(year, 1, 1)
-        end_date = datetime(year, 12, 31)
-        location_visits = model.Session.query(cls).filter(cls.location_name == location_name) \
-                                                 .filter(cls.visit_date >= start_date) \
-                                                 .filter(cls.visit_date <= end_date) \
-                                                 .all()
+    # @classmethod
+    # def get_visits_during_year(cls, location_name, year):
+    #     '''
+    #     Returns number of visitors during one calendar yearself.
+    #     For example, calling this with parameter year=2017 would returned
+    #     the number of visitors during the year 2017.
 
-        return location_visits
+    #     :param location_name: name of the location
+    #     :param year: Year as an integer
+    #     :return: Number of visitors during the year
+    #     '''
+    #     start_date = datetime(year, 1, 1)
+    #     end_date = datetime(year, 12, 31)
+    #     location_visits = model.Session.query(cls).filter(cls.location_name == location_name) \
+    #                                              .filter(cls.visit_date >= start_date) \
+    #                                              .filter(cls.visit_date <= end_date) \
+    #                                              .all()
 
-    @classmethod
-    def get_last_visits_by_name(cls, location_name, num_days=30):
-        start_date = datetime.now() - timedelta(num_days)
-        location_visits = model.Session.query(cls).filter(cls.location_name == location_name).filter(cls.visit_date >= start_date).all()
-        #Returns the total number of visits since the beggining of all times
-        total_visits = model.Session.query(func.sum(cls.visits)).filter(cls.location_name == location_name).scalar()
-        visits = {}
+    #     return location_visits
 
-        if total_visits is not None:
-            visits = VisitorLocationStats.convert_to_dict(location_visits, total_visits)
+    # @classmethod
+    # def get_last_visits_by_name(cls, location_name, num_days=30):
+    #     start_date = datetime.now() - timedelta(num_days)
+    #     location_visits = model.Session.query(cls).filter(cls.location_name == location_name).filter(cls.visit_date >= start_date).all()
+    #     #Returns the total number of visits since the beggining of all times
+    #     total_visits = model.Session.query(func.sum(cls.visits)).filter(cls.location_name == location_name).scalar()
+    #     visits = {}
 
-        return visits
+    #     if total_visits is not None:
+    #         visits = AudienceLocation.convert_to_dict(location_visits, total_visits)
 
-    @classmethod
-    def as_dict(cls, res):
-        result = {}
-        result['location'] = location.name
-        result['id'] = location.id
-        result['visits'] = location.visits
-        result['visit_date'] = location.visit_date.strftime("%d-%m-%Y")
-        return result
+    #     return visits
 
-    @classmethod
-    def convert_to_dict(cls, location_stats, tot_visits):
+    # @classmethod
+    # def as_dict(cls, res):
+    #     result = {}
+    #     result['location'] = location.name
+    #     result['id'] = location.id
+    #     result['visits'] = location.visits
+    #     result['visit_date'] = location.visit_date.strftime("%d-%m-%Y")
+    #     return result
+
+    # @classmethod
+    # def convert_to_dict(cls, location_stats, tot_visits):
         visits = []
         for location in location_stats:
-            visits.append(VisitorLocationStats.as_dict(location))
+            visits.append(AudienceLocation.as_dict(location))
 
         results = {
            "location": visits,
@@ -467,11 +505,12 @@ class VisitorLocationStats(Base):
     
     @classmethod
     def get_latest_update_date(cls):
-        result = model.Session.query(cls).order_by(cls.visit_date.desc()).first()
+        result = model.Session.query(cls).order_by(cls.date.desc()).first()
         if result is None:
             return None
         else:
-            return result.visit_date
+            return result.date
+
 
 def init_tables(engine):
     Base.metadata.create_all(engine)
