@@ -414,7 +414,7 @@ class AudienceLocationDate(Base):
     date = Column(types.DateTime, default=datetime.now, primary_key=True)
     # TODO: add returning visits, new visits
     visits = Column(types.Integer)
-    location_id = Column(types.Integer, ForeignKey('audience_location.id'), primary_key=True)
+    location_id = Column(types.Integer, ForeignKey('audience_location.id'))
 
     location = relationship("AudienceLocation", back_populates="visits_by_date")
 
@@ -427,14 +427,19 @@ class AudienceLocationDate(Base):
         :param date: last visit date
         :param visits: number of visits until visit_date
         :return: True for a successful update, otherwise False
-        '''
+        '''        
         # find location_id by name
         location = model.Session.query(AudienceLocation).filter(AudienceLocation.location_name == location_name).first()
+
         # if not found add location as new location
         if location is None:
+            print 'Adding new location: %s' % location_name
             location = AudienceLocation(location_name=location_name)
             model.Session.add(location)
+            model.Session.commit()
 
+        if location.id is None:
+            print 'my location id is none: %s' % location_name
         # find if location already has views for that date
         location_by_date = model.Session.query(cls).filter(cls.location_id == location.id).filter(cls.date == visit_date).first()
         # if not add them as a new row
@@ -517,15 +522,11 @@ class AudienceLocationDate(Base):
     @classmethod
     def convert_to_dict(cls, location_stats, tot_visits):
         visits = []
-        if location_stats is None:
-            print 'location_stats is none'
         for location in location_stats:
-            if location is None:
-                print 'location is none'
             visits.append(AudienceLocationDate.as_dict(location))
 
         results = {
-            "location": visits,
+            "locations": visits,
         }
 
         if tot_visits is not None:
@@ -536,10 +537,7 @@ class AudienceLocationDate(Base):
     @classmethod
     def get_location_name_by_id(cls, location_id):
         location = model.Session.query(AudienceLocation).filter(AudienceLocation.id == location_id).first()
-        location_name = []
-        if location is not None:
-            location_name = location.location_name
-        return location_name
+        return location.location_name
 
     @classmethod
     def get_location_id_by_name(cls, location_name):
@@ -572,6 +570,7 @@ def filter_days_between(date, num_days=30):
     return ((date >= start_date) & (date <= end_date))
 
 def init_tables(engine):
+    Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     log.info('Google analytics database tables are set-up')
 

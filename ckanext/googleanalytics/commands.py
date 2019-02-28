@@ -177,6 +177,8 @@ class GACommand(p.toolkit.CkanCommand):
             'dimensions': 'ga:country, ga:date',
         }]
 
+        queries = [queries[1]]
+
         # loop through queries, parse and save them to db
         for query in queries:
             data = {}
