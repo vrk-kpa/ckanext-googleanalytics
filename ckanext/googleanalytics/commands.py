@@ -324,3 +324,6 @@ class GACommand(p.toolkit.CkanCommand):
 
     def test_queries(self):
         AudienceLocationDate.get_visits_during_year(location_name='Finland', year=2018)
+        AudienceLocationDate.get_total_visits(num_days=30)
+        AudienceLocationDate.get_visits_by_location(location_name="Finland", num_days=30)
+        AudienceLocationDate.get_top(limit=20)

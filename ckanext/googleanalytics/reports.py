@@ -1,5 +1,5 @@
 from ckan.common import OrderedDict
-from ckanext.googleanalytics.model import PackageStats,ResourceStats
+from ckanext.googleanalytics.model import PackageStats, ResourceStats, AudienceLocationDate
 
 
 def google_analytics_dataset_report(last):
@@ -55,3 +55,28 @@ googleanalytics_resource_report_info = {
     'template': 'report/resource_analytics.html'
 }
 
+def google_analytics_location_report(last):
+    '''
+    Generates report based on google analytics data. number of sessions per location
+    '''
+    # get location objects
+    top_locations = AudienceLocationDate.get_top(limit=last)
+
+    return {
+        'table' : top_locations.get("locations")
+    }
+
+def google_analytics_location_option_combinations():
+    options = [20, 25, 30, 35, 40, 45, 50]
+    for option in options:
+        yield { 'last': option }
+
+googleanalytics_location_report_info = {
+    'name': 'google-analytics-location',
+    'title': 'Audience locations',
+    'description': 'Google analytics showing most audience locations',
+    'option_defaults': OrderedDict((('last', 20),)),
+    'option_combinations': google_analytics_location_option_combinations,
+    'generate': google_analytics_location_report,
+    'template': 'report/location_analytics.html'
+}

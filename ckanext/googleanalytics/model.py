@@ -160,7 +160,7 @@ class PackageStats(Base):
         return results
 
     @classmethod
-    def as_dict(cls,res):
+    def as_dict(cls, res):
         result = {}
         package_name = PackageStats.get_package_name_by_id(res.package_id)
         result['package_name'] = package_name
@@ -170,7 +170,7 @@ class PackageStats(Base):
         return result
 
     @classmethod
-    def convert_to_dict(cls,resource_stats, tot_visits):
+    def convert_to_dict(cls, resource_stats, tot_visits):
         visits = []
         for resource in resource_stats:
             visits.append(PackageStats.as_dict(resource))
@@ -414,7 +414,7 @@ class AudienceLocationDate(Base):
     date = Column(types.DateTime, default=datetime.now, primary_key=True)
     # TODO: add returning visits, new visits
     visits = Column(types.Integer)
-    location_id = Column(types.Integer, ForeignKey('audience_location.id'))
+    location_id = Column(types.Integer, ForeignKey('audience_location.id'), primary_key=True)
 
     location = relationship("AudienceLocation", back_populates="visits_by_date")
 
@@ -461,7 +461,7 @@ class AudienceLocationDate(Base):
         '''
         start_date = datetime(year, 1, 1)
         end_date = datetime(year, 12, 31)
-        location_id = model.Session.query(AudienceLocation).filter(AudienceLocation.location_name == location_name).first().id
+        location_id = cls.get_location_id_by_name(location_name)
         location_visits = model.Session.query(func.sum(cls.visits)).filter(cls.location_id == location_id) \
                                                  .filter(cls.date >= start_date) \
                                                  .filter(cls.date <= end_date) \
@@ -469,41 +469,86 @@ class AudienceLocationDate(Base):
         print '%s sessions from %s in year %i' % (location_visits, location_name, year)
         return location_visits
 
-    # @classmethod
-    # def get_last_visits_by_name(cls, location_name, num_days=30):
-    #     start_date = datetime.now() - timedelta(num_days)
-    #     location_visits = model.Session.query(cls).filter(cls.location_name == location_name).filter(cls.visit_date >= start_date).all()
-    #     #Returns the total number of visits since the beggining of all times
-    #     total_visits = model.Session.query(func.sum(cls.visits)).filter(cls.location_name == location_name).scalar()
-    #     visits = {}
+    @classmethod
+    def get_total_visits(cls, num_days=30):
+        '''
+        Returns the total amount of visits from the current date to a provided date
+        '''
+        total_visits = model.Session.query(func.sum(cls.visits)).filter(filter_days_between(cls.date, num_days)) \
+                                                                .scalar()
+        
+        print 'total visits %s' % total_visits
+        return total_visits
 
-    #     if total_visits is not None:
-    #         visits = AudienceLocation.convert_to_dict(location_visits, total_visits)
+    @classmethod
+    def get_visits_by_location(cls, location_name, num_days=30):
+        '''
+        Returns amount of visits in the location between the dates
+        current date TO current - number of days
+        '''
+        location_id = cls.get_location_id_by_name(location_name)
 
-    #     return visits
+        total_visits = model.Session.query(func.sum(cls.visits)).filter(cls.location_id == location_id) \
+                                                                .filter(filter_days_between(cls.date, num_days)) \
+                                                                .scalar()
+        
+        print '%s visits from %s in the past %i days' % (total_visits, location_name, num_days)
+        return total_visits
 
-    # @classmethod
-    # def as_dict(cls, res):
-    #     result = {}
-    #     result['location'] = location.name
-    #     result['id'] = location.id
-    #     result['visits'] = location.visits
-    #     result['visit_date'] = location.visit_date.strftime("%d-%m-%Y")
-    #     return result
+    @classmethod
+    def get_top(cls, limit=20):
+        #TODO: Reimplement in more efficient manner if needed (using RANK OVER and PARTITION in raw sql)
+        locations = model.Session.query(cls.location_id, func.sum(cls.visits).label('total_visits')) \
+            .group_by(cls.location_id) \
+            .order_by(func.sum(cls.visits).desc()) \
+            .limit(limit) \
+            .all()
+        return cls.convert_to_dict(locations, None)
 
-    # @classmethod
-    # def convert_to_dict(cls, location_stats, tot_visits):
+    @classmethod
+    def as_dict(cls, location):
+        result = {}
+        location_name = cls.get_location_name_by_id(location.location_id)
+        result['location_name'] = location_name
+        result['location_id'] = location.location_id
+        result['total_visits'] = location.total_visits
+        return result
+
+    @classmethod
+    def convert_to_dict(cls, location_stats, tot_visits):
         visits = []
+        if location_stats is None:
+            print 'location_stats is none'
         for location in location_stats:
-            visits.append(AudienceLocation.as_dict(location))
+            if location is None:
+                print 'location is none'
+            visits.append(AudienceLocationDate.as_dict(location))
 
         results = {
-           "location": visits,
+            "location": visits,
         }
+
         if tot_visits is not None:
             results["tot_visits"] = tot_visits
+
         return results
     
+    @classmethod
+    def get_location_name_by_id(cls, location_id):
+        location = model.Session.query(AudienceLocation).filter(AudienceLocation.id == location_id).first()
+        location_name = []
+        if location is not None:
+            location_name = location.location_name
+        return location_name
+
+    @classmethod
+    def get_location_id_by_name(cls, location_name):
+        location = model.Session.query(AudienceLocation).filter(AudienceLocation.location_name == location_name).first()
+        location_id = []
+        if location is not None:
+            location_id = location.id
+        return location_id
+
     @classmethod
     def get_latest_update_date(cls):
         result = model.Session.query(cls).order_by(cls.date.desc()).first()
@@ -513,6 +558,20 @@ class AudienceLocationDate(Base):
             return result.date
 
 
+def filter_days_between(date, num_days=30):
+    '''
+    Return true if date is between current date and set number of days
+    else returns false
+
+    + 1 to dates because analytics doesn't save the current date
+    so it will return 30 days of data and the current date will be empty
+    '''
+    start_date = datetime.now() - timedelta(num_days + 1)
+    end_date = datetime.now()
+    print 'between %s and %s' % (start_date, end_date)
+    return ((date >= start_date) & (date <= end_date))
+
 def init_tables(engine):
     Base.metadata.create_all(engine)
     log.info('Google analytics database tables are set-up')
+
