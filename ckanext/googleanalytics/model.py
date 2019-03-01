@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime,timedelta
 
-from sqlalchemy import types, func, Column, ForeignKey, Table
+from sqlalchemy import types, func, Column, ForeignKey, Table, not_
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -490,15 +490,47 @@ class AudienceLocationDate(Base):
         '''
         Returns amount of visits in the location between the dates
         current date TO current - number of days
+
+        ! in the beginning of location_name works as NOT
+
+        !Finland = not Finland
+        returns everything that is not Finland
         '''
+
+        negate = False
+        if location_name.startswith('!'):
+            location_name = location_name[1:]
+            negate = True
+
         location_id = cls.get_location_id_by_name(location_name)
 
-        total_visits = model.Session.query(func.sum(cls.visits)).filter(cls.location_id == location_id) \
+        total_visits = model.Session.query(func.sum(cls.visits)).filter(maybe_negate(cls.location_id, location_id, negate)) \
                                                                 .filter(filter_days_between(cls.date, num_days)) \
                                                                 .scalar()
         
-        print '%s visits from %s in the past %i days' % (total_visits, location_name, num_days)
+        # print '%s visits %s %s in the past %i days' % (total_visits, ('outside' if negate else 'from'), location_name, num_days)
         return total_visits
+
+    @classmethod
+    def get_visits_by_location_vs_world(cls, location_name, num_days=30):
+        '''
+        For comparing visits from location to the rest of the world
+        For example visitors from Finland vs Rest of world
+
+        Returns a list with two dicts like
+        { location: 'Finland', visits: 40320 }
+        '''
+        negated_location_name = '!' + location_name
+        return [
+            {
+                'location': location_name,
+                'visits': cls.get_visits_by_location(location_name, num_days),
+            },
+            {
+                'location': 'Other',
+                'visits': cls.get_visits_by_location(negated_location_name, num_days)
+            }
+        ]
 
     @classmethod
     def get_top(cls, limit=20):
@@ -555,6 +587,10 @@ class AudienceLocationDate(Base):
         else:
             return result.date
 
+def maybe_negate(value, inputvalue, negate=False):
+    if negate:
+        return not_(value == inputvalue)
+    return (value == inputvalue)
 
 def filter_days_between(date, num_days=30):
     '''
@@ -566,7 +602,6 @@ def filter_days_between(date, num_days=30):
     '''
     start_date = datetime.now() - timedelta(num_days + 1)
     end_date = datetime.now()
-    print 'between %s and %s' % (start_date, end_date)
     return ((date >= start_date) & (date <= end_date))
 
 def init_tables(engine):

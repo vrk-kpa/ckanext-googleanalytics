@@ -61,9 +61,15 @@ def google_analytics_location_report(last):
     '''
     # get location objects
     top_locations = AudienceLocationDate.get_top(limit=last)
+    finland_vs_world_month = AudienceLocationDate.get_visits_by_location_vs_world('Finland', 30)
+    finland_vs_world_all = AudienceLocationDate.get_visits_by_location_vs_world('Finland', 10000) # 27 years
 
     return {
-        'table' : top_locations.get("locations")
+        'table' : {
+            'top_locations': top_locations.get("locations"),
+            'finland_vs_world_month': finland_vs_world_month,
+            'finland_vs_world_all': finland_vs_world_all,
+        }    
     }
 
 def google_analytics_location_option_combinations():
