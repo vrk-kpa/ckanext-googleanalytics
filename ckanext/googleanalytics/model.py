@@ -605,7 +605,6 @@ def filter_days_between(date, num_days=30):
     return ((date >= start_date) & (date <= end_date))
 
 def init_tables(engine):
-    Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     log.info('Google analytics database tables are set-up')
 
