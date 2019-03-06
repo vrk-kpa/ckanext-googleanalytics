@@ -454,47 +454,64 @@ class AudienceLocationDate(Base):
         return True
 
     @classmethod
-    def get_visits_during_year(cls, location_name, year):
+    def get_visits(cls, start_date, end_date):
         '''
-        Returns number of visitors during one calendar yearself.
-        For example, calling this with parameter year=2017 would returned
-        the number of visitors during the year 2017.
+        Get all visits items between selected dates
+        grouped by date
 
-        :param location_name: name of the location
-        :param year: Year as an integer
-        :return: Number of visitors during the year
+        returns list of dicst like:
+        [
+            {
+                location_name
+                date
+                visits
+            }
+        ]
         '''
-        start_date = datetime(year, 1, 1)
-        end_date = datetime(year, 12, 31)
-        location_id = cls.get_location_id_by_name(location_name)
-        location_visits = model.Session.query(func.sum(cls.visits)).filter(cls.location_id == location_id) \
-                                                 .filter(cls.date >= start_date) \
-                                                 .filter(cls.date <= end_date) \
-                                                 .scalar()
-        print '%s sessions from %s in year %i' % (location_visits, location_name, year)
-        return location_visits
+        data = model.Session.query(cls.visits, cls.date, cls.location_id) \
+                            .filter(cls.date >= start_date) \
+                            .filter(cls.date <= end_date) \
+                            .all()
+        
+        return cls.convert_list_to_dicts(data)
 
     @classmethod
-    def get_total_visits(cls, num_days=30):
+    def get_total_visits(cls, start_date, end_date):
         '''
-        Returns the total amount of visits from the current date to a provided date
+        Returns the total amount of visits on the website
+        from the start date to the end date
+
+        return dict like:
+        {
+            total_visits
+        }
         '''
-        total_visits = model.Session.query(func.sum(cls.visits)).filter(filter_days_between(cls.date, num_days)) \
-                                                                .scalar()
+        total_visits = model.Session.query(func.sum(cls.visits)) \
+                                        .filter(cls.date >= start_date) \
+                                        .filter(cls.date <= end_date) \
+                                        .scalar()
         
         print 'total visits %s' % total_visits
-        return total_visits
+        return { "total_visits": total_visits }
 
     @classmethod
-    def get_visits_by_location(cls, location_name, num_days=30):
+    def get_total_visits_by_location(cls, start_date, end_date, location_name):
         '''
-        Returns amount of visits in the location between the dates
-        current date TO current - number of days
+        Returns amount of visits in the location
+        from start_date to end_date
 
         ! in the beginning of location_name works as NOT
 
         !Finland = not Finland
         returns everything that is not Finland
+
+        returns list of dicst like:
+        [
+            {
+                location_name
+                total_visits
+            }
+        ]
         '''
 
         negate = False
@@ -505,67 +522,33 @@ class AudienceLocationDate(Base):
         location_id = cls.get_location_id_by_name(location_name)
 
         total_visits = model.Session.query(func.sum(cls.visits)).filter(maybe_negate(cls.location_id, location_id, negate)) \
-                                                                .filter(filter_days_between(cls.date, num_days)) \
+                                                                .filter(cls.date >= start_date) \
+                                                                .filter(cls.date <= end_date) \
                                                                 .scalar()
         
-        # print '%s visits %s %s in the past %i days' % (total_visits, ('outside' if negate else 'from'), location_name, num_days)
-        return total_visits
+        return { "total_visits": total_visits, "location_name": location_name }
 
     @classmethod
-    def get_visits_by_location_vs_world(cls, location_name, num_days=30):
+    def get_total_top_locations(cls, limit=20):
         '''
-        For comparing visits from location to the rest of the world
-        For example visitors from Finland vs Rest of world
+        Locations sorted by total visits
 
-        Returns a list with two dicts like
-        { location: 'Finland', visits: 40320 }
-        '''
-        negated_location_name = '!' + location_name
-        return [
+        returns list of dicts like:
+        [
             {
-                'location': location_name,
-                'visits': cls.get_visits_by_location(location_name, num_days),
-            },
-            {
-                'location': 'Other',
-                'visits': cls.get_visits_by_location(negated_location_name, num_days)
+                location_name
+                total_visits
             }
         ]
-
-    @classmethod
-    def get_top(cls, limit=20):
-        #TODO: Reimplement in more efficient manner if needed (using RANK OVER and PARTITION in raw sql)
+        '''
         locations = model.Session.query(cls.location_id, func.sum(cls.visits).label('total_visits')) \
             .group_by(cls.location_id) \
             .order_by(func.sum(cls.visits).desc()) \
             .limit(limit) \
             .all()
-        return cls.convert_to_dict(locations, None)
+        
+        return cls.convert_list_to_dicts(locations)
 
-    @classmethod
-    def as_dict(cls, location):
-        result = {}
-        location_name = cls.get_location_name_by_id(location.location_id)
-        result['location_name'] = location_name
-        result['location_id'] = location.location_id
-        result['total_visits'] = location.total_visits
-        return result
-
-    @classmethod
-    def convert_to_dict(cls, location_stats, tot_visits):
-        visits = []
-        for location in location_stats:
-            visits.append(AudienceLocationDate.as_dict(location))
-
-        results = {
-            "locations": visits,
-        }
-
-        if tot_visits is not None:
-            results["tot_visits"] = tot_visits
-
-        return results
-    
     @classmethod
     def get_location_name_by_id(cls, location_id):
         location = model.Session.query(AudienceLocation).filter(AudienceLocation.id == location_id).first()
@@ -586,23 +569,39 @@ class AudienceLocationDate(Base):
             return None
         else:
             return result.date
+    
+    @classmethod
+    def as_dict(cls, location):
+        result = {}
+        tmp_dict = location._asdict()
+        location_name = cls.get_location_name_by_id(tmp_dict['location_id'])
+        if location_name:
+            result['location_name'] = location_name
+        if 'date' in tmp_dict:
+            result['date'] = tmp_dict['date']
+        if 'visits' in tmp_dict:
+            result['visits'] = tmp_dict['visits']
+        if 'total_visits' in tmp_dict:
+            result['total_visits'] = tmp_dict['total_visits']
+        return result
+
+    @classmethod
+    def convert_list_to_dicts(cls, location_stats):
+        visits = []
+        for location in location_stats:
+            visits.append(AudienceLocationDate.as_dict(location))
+
+        results = {
+            "results": visits,
+        }
+        print 'locations %s' % visits
+
+        return results
 
 def maybe_negate(value, inputvalue, negate=False):
     if negate:
         return not_(value == inputvalue)
     return (value == inputvalue)
-
-def filter_days_between(date, num_days=30):
-    '''
-    Return true if date is between current date and set number of days
-    else returns false
-
-    + 1 to dates because analytics doesn't save the current date
-    so it will return 30 days of data and the current date will be empty
-    '''
-    start_date = datetime.now() - timedelta(num_days + 1)
-    end_date = datetime.now()
-    return ((date >= start_date) & (date <= end_date))
 
 def init_tables(engine):
     Base.metadata.create_all(engine)
