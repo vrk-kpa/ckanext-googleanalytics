@@ -1,6 +1,6 @@
 from ckan.common import OrderedDict
 from ckanext.googleanalytics.model import PackageStats, ResourceStats, AudienceLocationDate
-
+from datetime import datetime, timedelta
 
 def google_analytics_dataset_report(last):
     '''
@@ -62,16 +62,16 @@ def google_analytics_location_report():
     # get location objects
     top_locations = AudienceLocationDate.get_total_top_locations(20)
 
-    last_month_end = datetime.date.today().replace(day = 1) - datetime.timedelta(days=1)
+    last_month_end = datetime.today().replace(day = 1) - timedelta(days=1)
     last_month_start = last_month_end.replace(day = 1)
-    finland_vs_world_last_month = AudienceLocationDate.get_total_visits_by_location(last_month_start, last_month_end, 'Finland')
+    finland_vs_world_last_month = AudienceLocationDate.special_total_location_to_rest(last_month_start, last_month_end, 'Finland')
 
-    finland_vs_world_all = AudienceLocationDate.get_total_visits_by_location(datetime.date(2000, 1, 1), datetime.today(), 'Finland')
+    finland_vs_world_all = AudienceLocationDate.special_total_location_to_rest(datetime(2000, 1, 1), datetime.today(), 'Finland')
 
     return {
         'table' : {
-            'top_locations': top_locations.get("results"),
-            'finland_vs_world_month': finland_vs_world_month,
+            'top_locations': top_locations,
+            'finland_vs_world_last_month': finland_vs_world_last_month,
             'finland_vs_world_all': finland_vs_world_all,
         }    
     }

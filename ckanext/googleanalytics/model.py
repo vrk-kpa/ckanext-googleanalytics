@@ -521,12 +521,14 @@ class AudienceLocationDate(Base):
 
         location_id = cls.get_location_id_by_name(location_name)
 
+        print 'Location id %s' % location_id
+
         total_visits = model.Session.query(func.sum(cls.visits)).filter(maybe_negate(cls.location_id, location_id, negate)) \
                                                                 .filter(cls.date >= start_date) \
                                                                 .filter(cls.date <= end_date) \
                                                                 .scalar()
         
-        return { "total_visits": total_visits, "location_name": location_name }
+        return { "total_visits": total_visits }
 
     @classmethod
     def get_total_top_locations(cls, limit=20):
@@ -548,6 +550,27 @@ class AudienceLocationDate(Base):
             .all()
         
         return cls.convert_list_to_dicts(locations)
+
+    @classmethod
+    def special_total_location_to_rest(cls, start_date, end_date, location):
+        location_details = cls.get_total_visits_by_location(start_date, end_date, location)
+        location_details['location_name'] = location
+        rest = cls.get_total_visits_by_location(start_date, end_date, '!' + location)
+        rest['location_name'] = 'Other'
+
+        return [
+            location_details,
+            rest,
+        ]
+
+    @classmethod
+    def special_total_by_months(cls):
+        # last day of last month
+        end_date = datetime.today().replace(day = 1) - timedelta(days = 1)
+        start_date = end_date - timedelta(days = 365)
+        visits = cls.get_visits(start_date=start_date, end_date=end_date)
+
+        # TODO: group manually to months
 
     @classmethod
     def get_location_name_by_id(cls, location_id):
@@ -591,12 +614,9 @@ class AudienceLocationDate(Base):
         for location in location_stats:
             visits.append(AudienceLocationDate.as_dict(location))
 
-        results = {
-            "results": visits,
-        }
         print 'locations %s' % visits
 
-        return results
+        return visits
 
 def maybe_negate(value, inputvalue, negate=False):
     if negate:

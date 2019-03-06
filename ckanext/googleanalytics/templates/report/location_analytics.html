@@ -3,19 +3,19 @@
 
 <script>
   var chartData = {
-    finland_vs_world_month: [
-      {% for row in table['finland_vs_world_month'] %}
+    finland_vs_world_last_month: [
+      {% for row in table['finland_vs_world_last_month'] %}
         {
-          value: {{ row.visits }},
-          label: '{{ row.location }}'
+          value: {{ row.total_visits }},
+          label: '{{ row.location_name }}'
         },
       {% endfor %}
     ],
     finland_vs_world_all: [
       {% for row in table['finland_vs_world_all'] %}
         {
-          value: {{ row.visits }},
-          label: '{{ row.location }}'
+          value: {{ row.total_visits }},
+          label: '{{ row.location_name }}'
         },
       {% endfor %}
     ],
@@ -24,7 +24,7 @@
 
 <div class="report-chart-row">
   <div data-module="chartData-doughnut"
-    data-module-field="finland_vs_world_month"
+    data-module-field="finland_vs_world_last_month"
     data-module-title="{% trans %}Sessions past month{% endtrans %}"
     data-module-legend="true"
     data-module-width="100"
@@ -33,7 +33,7 @@
     class="report-pie-chart flex-1">
   </div>
   <div data-module="chartData-doughnut"
-    data-module-field="finland_vs_world_month"
+    data-module-field="finland_vs_world_last_month"
     data-module-title="{% trans %}Sessions past month{% endtrans %}"
     data-module-chart="true"
     id="locationChartMonth"
