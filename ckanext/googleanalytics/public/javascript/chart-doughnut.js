@@ -3,9 +3,9 @@
 ckan.module('chartData-doughnut', function($) {
   return {
     initialize: function($) {
-      var data = chartData[this.options.field].map((x) => Object.assign({}, x));
-      var sum = data.reduce((sum, x) => (sum + x.value), 0);
-      data = data.map((x) => {
+      var data = chartData[this.options.field].map(x => Object.assign({}, x));
+      var sum = data.reduce((sum, x) => sum + x.value, 0);
+      data = data.map(x => {
         x.ratio = x.value / sum;
         return x;
       });
@@ -18,13 +18,13 @@ ckan.module('chartData-doughnut', function($) {
         this.options.legend,
         this.options.chart,
         data,
-        (x) => {
+        x => {
           return x.value;
         },
-        (x) => {
+        x => {
           return x.label;
         },
-        (x) => {
+        x => {
           return `${x.value} (${(x.ratio * 100).toFixed(1)}%)`;
         },
       );
@@ -53,7 +53,9 @@ function initChart(
       rightPadding = 50,
       legendWidth = leftPadding + (showLegend ? 150 : 0),
       radius = showChart ? 150 : 0,
-      width = customWidth ? customWidth : radius * 2 + legendWidth + rightPadding,
+      width = customWidth
+        ? customWidth
+        : radius * 2 + legendWidth + rightPadding,
       height = customHeight ? customHeight : 300;
 
     var strokeColor = d3
@@ -77,14 +79,15 @@ function initChart(
       .startAngle(offsetAngle)
       .endAngle(2 * Math.PI + offsetAngle)
       .value(getValue);
-    
+
     var piedata = pie(data);
 
     var svg = d3
       .select(element)
       .append('svg')
       .attr('viewBox', '0 0 ' + width + ' ' + height)
-      .append('g');
+      .append('g')
+      .attr('transform', 'translate(10,0), scale(0.95)');
 
     if (showChart) {
       var titleText = svg
@@ -93,26 +96,6 @@ function initChart(
         .attr('class', 'title')
         .attr('transform', 'translate(' + (legendWidth + radius) + ',18)')
         .text(title);
-
-      var sum = data.reduce(function(sum, x) {
-        return sum + getValue(x);
-      }, 0);
-
-      var subText = svg
-        .append('text')
-        .attr('text-anchor', 'middle')
-        .attr('dominant-baseline', 'middle')
-        .attr('class', 'total')
-        .style('font-size', radius * 0.3 + 'px')
-        .attr(
-          'transform',
-          'translate(' +
-            (legendWidth + radius) +
-            ',' +
-            (height / 2 + radius * 0.125) +
-            ')',
-        )
-        .text(sum);
 
       var g = svg
         .selectAll('.arc')
@@ -137,6 +120,26 @@ function initChart(
         .style('stroke', function(d, i) {
           return strokeColor(i);
         });
+
+      var sum = data.reduce(function(sum, x) {
+        return sum + getValue(x);
+      }, 0);
+
+      var subText = svg
+        .append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'middle')
+        .attr('class', 'total')
+        .style('font-size', radius * 0.3 + 'px')
+        .attr(
+          'transform',
+          'translate(' +
+            (legendWidth + radius) +
+            ',' +
+            (height / 2 + radius * 0.125) +
+            ')',
+        )
+        .text(sum);
 
       var labels = svg
         .selectAll('.label')

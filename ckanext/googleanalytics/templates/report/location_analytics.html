@@ -1,6 +1,66 @@
 {% resource "ytp_dataset_js/d3.js" %}
 {% resource "ckanext-googleanalytics_js/chart-doughnut.js" %}
+{% resource "ckanext-googleanalytics_js/chart-column.js" %}
+<style>
+div.report-column-chart {
+  margin: auto;
+}
 
+.report-column-chart svg {
+  width: 100%;
+  height: 100%;
+}
+
+.report-column-chart .bar {
+  fill: #80cbc4;
+}
+
+.report-column-chart text {
+  font-size: 12px;
+  fill: #333;
+}
+
+.report-column-chart path {
+  stroke: gray;
+}
+
+.report-column-chart line {
+  stroke: gray;
+}
+
+.report-column-chart line#limit {
+  stroke: #FED966;
+  stroke-width: 3;
+  stroke-dasharray: 3 6;
+}
+
+.report-column-chart .grid path {
+  stroke-width: 0;
+}
+
+.report-column-chart .grid .tick line {
+  stroke: #9FAAAE;
+  stroke-opacity: 0.3;
+}
+
+.report-column-chart text.value {
+  font-size: 14px;
+}
+
+.report-column-chart text.title {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.report-column-chart text.label {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.report-column-chart text.source {
+  font-size: 10px;
+}
+</style>
 <script>
   var chartData = {
     finland_vs_world_last_month: [
@@ -19,13 +79,37 @@
         },
       {% endfor %}
     ],
+    visitors_by_months: [
+      { date: 'Mar 2018', visits: 14447 },
+      { date: 'Apr 2018', visits: 14076 },
+      { date: 'May 2018', visits: 13057 },
+      { date: 'Jun 2018', visits: 16612 },
+      { date: 'Jul 2018', visits: 9764 },
+      { date: 'Aug 2018', visits: 13416 },
+      { date: 'Sep 2018', visits: 15361 },
+      { date: 'Oct 2018', visits: 19423 },
+      { date: 'Nov 2018', visits: 24789 },
+      { date: 'Dec 2018', visits: 20544 },
+      { date: 'Jan 2019', visits: 22184 },
+      { date: 'Feb 2019', visits: 13244 },
+    ]
   }
 </script>
 
 <div class="report-chart-row">
+  <div data-module="chartData-column"
+    data-module-field="visitors_by_months"
+    data-module-title="{% trans %}Sessions by month{% endtrans %}"
+    data-module-legendx="{% trans %}Dates{% endtrans %}"
+    data-module-legendy="{% trans %}Sessions{% endtrans %}"
+    id="locationColumnChart"
+    class="report-column-chart flex-1">
+  </div>
+</div>
+<div class="report-chart-row">
   <div data-module="chartData-doughnut"
     data-module-field="finland_vs_world_last_month"
-    data-module-title="{% trans %}Sessions past month{% endtrans %}"
+    data-module-title="{% trans %}Sessions last month{% endtrans %}"
     data-module-legend="true"
     data-module-width="100"
     data-module-height="100"
@@ -34,7 +118,7 @@
   </div>
   <div data-module="chartData-doughnut"
     data-module-field="finland_vs_world_last_month"
-    data-module-title="{% trans %}Sessions past month{% endtrans %}"
+    data-module-title="{% trans %}Sessions last month{% endtrans %}"
     data-module-chart="true"
     id="locationChartMonth"
     class="report-pie-chart flex-2">
