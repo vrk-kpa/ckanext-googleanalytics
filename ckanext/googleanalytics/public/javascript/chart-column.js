@@ -6,26 +6,26 @@ ckan.module('chartData-column', function($) {
       let data = chartData[this.options.field].map((x) => Object.assign({}, x));
       
       const biggest = data.reduce((biggest, x) => {
-        return biggest.visits > x.visits ? biggest : x
+        return biggest.value > x.value ? biggest : x
       }, 0);
 
       data = data.map((x) => {
-        x.ratio = x.visits / biggest;
+        x.ratio = x.value / biggest;
         return x;
       });
 
-      var chart = initColumnChart(
+      initColumnChart(
         this.el[0],
         data,
-        biggest.visits,
+        biggest.value,
         this.options.title,
         this.options.legendx,
         this.options.legendy,
         (x) => {
-          return x.visits;
+          return x.value;
         },
         (x) => {
-          return x.date;
+          return x.label;
         },
       );
     },

@@ -59,7 +59,8 @@ def google_analytics_location_report():
     '''
     Generates report based on google analytics data. number of sessions per location
     '''
-    # get location objects
+    sessions_by_month = AudienceLocationDate.special_total_by_months()
+
     top_locations = AudienceLocationDate.get_total_top_locations(20)
 
     last_month_end = datetime.today().replace(day = 1) - timedelta(days=1)
@@ -73,7 +74,8 @@ def google_analytics_location_report():
             'top_locations': top_locations,
             'finland_vs_world_last_month': finland_vs_world_last_month,
             'finland_vs_world_all': finland_vs_world_all,
-        }    
+            'sessions_by_month': sessions_by_month,
+        }
     }
 
 googleanalytics_location_report_info = {

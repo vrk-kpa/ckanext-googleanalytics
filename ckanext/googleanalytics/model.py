@@ -581,7 +581,7 @@ class AudienceLocationDate(Base):
         results = []
         for key in grouped:
             results.append({ "date": key, "visits": grouped[key] })
-
+        print 'results from special %s', results
         return results
 
     @classmethod
