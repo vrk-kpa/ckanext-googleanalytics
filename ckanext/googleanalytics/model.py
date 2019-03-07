@@ -412,7 +412,7 @@ class AudienceLocationDate(Base):
 
     id = Column(types.Integer, primary_key=True, autoincrement=True, unique=True)
     date = Column(types.DateTime, default=datetime.now, primary_key=True)
-    # TODO: add returning visits, new visits
+    
     visits = Column(types.Integer)
     location_id = Column(types.Integer, ForeignKey('audience_location.id'))
 
@@ -433,7 +433,6 @@ class AudienceLocationDate(Base):
 
         # if not found add location as new location
         if location is None:
-            print 'Adding new location: %s' % location_name
             location = AudienceLocation(location_name=location_name)
             model.Session.add(location)
             model.Session.commit()
@@ -471,6 +470,7 @@ class AudienceLocationDate(Base):
         data = model.Session.query(cls.visits, cls.date, cls.location_id) \
                             .filter(cls.date >= start_date) \
                             .filter(cls.date <= end_date) \
+                            .order_by(cls.date.desc()) \
                             .all()
         
         return cls.convert_list_to_dicts(data)
@@ -570,7 +570,19 @@ class AudienceLocationDate(Base):
         start_date = end_date - timedelta(days = 365)
         visits = cls.get_visits(start_date=start_date, end_date=end_date)
 
-        # TODO: group manually to months
+        grouped = {}
+        for item in visits:
+            month = item['date'].replace(day = 1).strftime('%b %Y')
+            if month not in grouped:
+                grouped[month] = item['visits']
+            else:
+                grouped[month] += item['visits']
+
+        results = []
+        for key in grouped:
+            results.append({ "date": key, "visits": grouped[key] })
+
+        return results
 
     @classmethod
     def get_location_name_by_id(cls, location_id):
@@ -613,8 +625,6 @@ class AudienceLocationDate(Base):
         visits = []
         for location in location_stats:
             visits.append(AudienceLocationDate.as_dict(location))
-
-        print 'locations %s' % visits
 
         return visits
 
