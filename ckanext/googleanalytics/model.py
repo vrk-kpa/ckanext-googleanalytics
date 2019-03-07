@@ -571,17 +571,28 @@ class AudienceLocationDate(Base):
         visits = cls.get_visits(start_date=start_date, end_date=end_date)
 
         grouped = {}
+
+        # sum visits values by each month
         for item in visits:
-            month = item['date'].replace(day = 1).strftime('%b %Y')
-            if month not in grouped:
-                grouped[month] = item['visits']
+            monthNumber = item['date'].month
+            if monthNumber not in grouped:
+                grouped[monthNumber] = {
+                    'date': item['date'].strftime('%b %Y'),
+                    'visits': item['visits'],
+                }
             else:
-                grouped[month] += item['visits']
+                grouped[monthNumber]['visits'] += item['visits']
 
         results = []
-        for key in grouped:
-            results.append({ "date": key, "visits": grouped[key] })
-        print 'results from special %s', results
+        current = datetime.today().month
+
+        # create a new list that is in chronological order by year and month
+        for x in range(0, 12):
+            month = (x + current) % 12
+            if month == 0:
+                month = 12
+            results.append({ "date": grouped[month]['date'], "visits": grouped[month]['visits'] })
+        
         return results
 
     @classmethod
