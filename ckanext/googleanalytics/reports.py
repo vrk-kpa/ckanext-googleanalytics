@@ -1,6 +1,6 @@
 from ckan.common import OrderedDict
-from ckanext.googleanalytics.model import PackageStats,ResourceStats
-
+from ckanext.googleanalytics.model import PackageStats, ResourceStats, AudienceLocationDate
+from datetime import datetime, timedelta
 
 def google_analytics_dataset_report(last):
     '''
@@ -55,3 +55,33 @@ googleanalytics_resource_report_info = {
     'template': 'report/resource_analytics.html'
 }
 
+def google_analytics_location_report():
+    '''
+    Generates report based on google analytics data. number of sessions per location
+    '''
+    # get location objects
+    top_locations = AudienceLocationDate.get_total_top_locations(20)
+
+    last_month_end = datetime.today().replace(day = 1) - timedelta(days=1)
+    last_month_start = last_month_end.replace(day = 1)
+    finland_vs_world_last_month = AudienceLocationDate.special_total_location_to_rest(last_month_start, last_month_end, 'Finland')
+
+    finland_vs_world_all = AudienceLocationDate.special_total_location_to_rest(datetime(2000, 1, 1), datetime.today(), 'Finland')
+
+    return {
+        'table' : {
+            'top_locations': top_locations,
+            'finland_vs_world_last_month': finland_vs_world_last_month,
+            'finland_vs_world_all': finland_vs_world_all,
+        }    
+    }
+
+googleanalytics_location_report_info = {
+    'name': 'google-analytics-location',
+    'title': 'Audience locations',
+    'description': 'Google analytics showing most audience locations',
+    'option_defaults': None,
+    'option_combinations': None,
+    'generate': google_analytics_location_report,
+    'template': 'report/location_analytics.html'
+}

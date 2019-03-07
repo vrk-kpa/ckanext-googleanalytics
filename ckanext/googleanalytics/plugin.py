@@ -100,6 +100,8 @@ class GoogleAnalyticsPlugin(p.SingletonPlugin):
     # IConfigurer
     def update_config(self, config):
         p.toolkit.add_template_directory(config, 'templates')
+        p.toolkit.add_resource('public/javascript/', 'ckanext-googleanalytics_js')
+        p.toolkit.add_public_directory(config, 'public')
 
     def before_map(self, map):
         '''Add new routes that this extension's controllers handle.
@@ -150,8 +152,8 @@ class GoogleAnalyticsPlugin(p.SingletonPlugin):
         return p.toolkit.render_snippet(
             'googleanalytics/snippets/googleanalytics_header.html', data)
 
-
+    # IReport
     def register_reports(self):
         """Register details of an extension's reports"""
-        from ckanext.googleanalytics import reports
-        return [reports.googleanalytics_dataset_report_info,reports.googleanalytics_resource_report_info]
+        import reports
+        return [reports.googleanalytics_dataset_report_info, reports.googleanalytics_resource_report_info, reports.googleanalytics_location_report_info]
