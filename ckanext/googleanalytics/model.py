@@ -1,4 +1,4 @@
-import uuid
+import uuid, json
 from datetime import datetime,timedelta
 
 from sqlalchemy import types, func, Column, ForeignKey, Table, not_
@@ -521,8 +521,6 @@ class AudienceLocationDate(Base):
 
         location_id = cls.get_location_id_by_name(location_name)
 
-        print 'Location id %s' % location_id
-
         total_visits = model.Session.query(func.sum(cls.visits)).filter(maybe_negate(cls.location_id, location_id, negate)) \
                                                                 .filter(cls.date >= start_date) \
                                                                 .filter(cls.date <= end_date) \
@@ -564,34 +562,31 @@ class AudienceLocationDate(Base):
         ]
 
     @classmethod
-    def special_total_by_months(cls):
-        # last day of last month
-        end_date = datetime.today().replace(day = 1) - timedelta(days = 1)
-        start_date = end_date - timedelta(days = 365)
+    def special_total_by_months(cls, start_date=None, end_date=None):
+        if end_date == None:
+            # last day of last month
+            end_date = datetime.today().replace(day = 1) - timedelta(days = 1)
+        if start_date == None:
+            start_date = end_date - timedelta(days = 365) # one year
+
         visits = cls.get_visits(start_date=start_date, end_date=end_date)
 
         grouped = {}
-
-        # sum visits values by each month
-        for item in visits:
-            monthNumber = item['date'].month
-            if monthNumber not in grouped:
-                grouped[monthNumber] = {
-                    'date': item['date'].strftime('%b %Y'),
-                    'visits': item['visits'],
-                }
-            else:
-                grouped[monthNumber]['visits'] += item['visits']
-
+        
+        unique_months = []
         results = []
-        current = datetime.today().month
 
-        # create a new list that is in chronological order by year and month
-        for x in range(0, 12):
-            month = (x + current) % 12
-            if month == 0:
-                month = 12
-            results.append({ "date": grouped[month]['date'], "visits": grouped[month]['visits'] })
+        for item in visits:
+            combined_date = str(item['date'].month) + '-' + str(item['date'].year)
+            if combined_date in unique_months:
+                for x in results:
+                    if x['combined_date'] == combined_date:
+                        x['visits'] += item['visits']
+            else:
+                unique_months.append(combined_date)
+                results.append({ 'combined_date': combined_date, 'date': item['date'].__str__(), 'visits': item['visits'] })
+
+        results.sort(key=lambda x: x['date'])
         
         return results
 

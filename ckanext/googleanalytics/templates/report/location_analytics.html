@@ -5,7 +5,7 @@
 <script>
   var chartData = {
     finland_vs_world_last_month: [
-      {% for row in table['finland_vs_world_last_month'] %}
+      {% for row in data['data']['finland_vs_world_last_month'] %}
         {
           value: {{ row.total_visits }},
           label: '{{ row.location_name }}'
@@ -13,7 +13,7 @@
       {% endfor %}
     ],
     finland_vs_world_all: [
-      {% for row in table['finland_vs_world_all'] %}
+      {% for row in data['data']['finland_vs_world_all'] %}
         {
           value: {{ row.total_visits }},
           label: '{{ row.location_name }}'
@@ -21,7 +21,7 @@
       {% endfor %}
     ],
     visitors_by_months: [
-      {% for row in table['sessions_by_month'] %}
+      {% for row in data['data']['sessions_by_month'] %}
         {
           value: {{ row.visits }},
           label: '{{ row.date }}'
@@ -69,21 +69,19 @@
 <hr class="page-break">
 <div>
   <h2>{% trans %}Audience locations{% endtrans %}</h2> 
-  {% if data['table'] %}
-    {% if table['top_locations'] %}
-      <table class="table table-condensed table-bordered table-striped">
+  {% if data['data']['top_locations'] %}
+    <table class="table table-condensed table-bordered table-striped">
+      <tr>
+        <th>{% trans %}Countries{% endtrans %}</th>
+        <th>{% trans %}Sessions (since recording started){% endtrans %}</th>
+      </tr>
+      {% for toplocation in data['data']['top_locations'] %}
         <tr>
-          <th>{% trans %}Countries{% endtrans %}</th>
-          <th>{% trans %}Sessions (since recording started){% endtrans %}</th>
+          <td>{{ toplocation.location_name }}</td>
+          <td>{{ toplocation.total_visits }}</td>
         </tr>
-        {% for toplocation in table['top_locations'] %}
-          <tr>
-            <td>{{ toplocation.location_name }}</td>
-            <td>{{ toplocation.total_visits }}</td>
-          </tr>
-        {% endfor %}
-      </table>
-    {% endif %}
+      {% endfor %}
+    </table>
   {% else %}
     <p>{% trans %}No statistics found for audience locations.{% endtrans %}</p>
   {% endif %}

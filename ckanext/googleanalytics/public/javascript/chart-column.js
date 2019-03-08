@@ -14,6 +14,8 @@ ckan.module('chartData-column', function($) {
         return x;
       });
 
+      const dateFormat = { year: 'numeric', month: 'short'}
+
       initColumnChart(
         this.el[0],
         data,
@@ -25,7 +27,7 @@ ckan.module('chartData-column', function($) {
           return x.value;
         },
         (x) => {
-          return x.label;
+          return new Date(x.label).toLocaleDateString('en-US', dateFormat);
         },
       );
     },

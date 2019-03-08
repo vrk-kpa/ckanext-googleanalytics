@@ -59,7 +59,6 @@ def google_analytics_location_report():
     '''
     Generates report based on google analytics data. number of sessions per location
     '''
-    sessions_by_month = AudienceLocationDate.special_total_by_months()
 
     top_locations = AudienceLocationDate.get_total_top_locations(20)
 
@@ -69,8 +68,14 @@ def google_analytics_location_report():
 
     finland_vs_world_all = AudienceLocationDate.special_total_location_to_rest(datetime(2000, 1, 1), datetime.today(), 'Finland')
 
+    sessions_by_month = AudienceLocationDate.special_total_by_months()
+
+    data_for_export = AudienceLocationDate.special_total_by_months(datetime(2000, 1, 1), last_month_end)
+    print 'data_for_export %s' % data_for_export
+    # first item in table list will be available for export
     return {
-        'table' : {
+        'table': data_for_export,
+        'data': {
             'top_locations': top_locations,
             'finland_vs_world_last_month': finland_vs_world_last_month,
             'finland_vs_world_all': finland_vs_world_all,
