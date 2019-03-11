@@ -79,7 +79,7 @@ def google_analytics_location_report():
 googleanalytics_location_report_info = {
     'name': 'google-analytics-location',
     'title': 'Audience locations',
-    'description': 'Google analytics showing most audience locations',
+    'description': 'Google analytics showing most audience locations (bot traffic is filtered out)',
     'option_defaults': None,
     'option_combinations': None,
     'generate': google_analytics_location_report,
