@@ -1,4 +1,4 @@
-import uuid, json
+import uuid
 from datetime import datetime,timedelta
 
 from sqlalchemy import types, func, Column, ForeignKey, Table, not_
@@ -437,8 +437,6 @@ class AudienceLocationDate(Base):
             model.Session.add(location)
             model.Session.commit()
 
-        if location.id is None:
-            print 'my location id is none: %s' % location_name
         # find if location already has views for that date
         location_by_date = model.Session.query(cls).filter(cls.location_id == location.id).filter(cls.date == visit_date).first()
         # if not add them as a new row
@@ -491,7 +489,6 @@ class AudienceLocationDate(Base):
                                         .filter(cls.date <= end_date) \
                                         .scalar()
         
-        print 'total visits %s' % total_visits
         return { "total_visits": total_visits }
 
     @classmethod

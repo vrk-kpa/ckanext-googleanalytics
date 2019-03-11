@@ -71,7 +71,7 @@ def google_analytics_location_report():
     sessions_by_month = AudienceLocationDate.special_total_by_months()
 
     data_for_export = AudienceLocationDate.special_total_by_months(datetime(2000, 1, 1), last_month_end)
-    print 'data_for_export %s' % data_for_export
+    
     # first item in table list will be available for export
     return {
         'table': data_for_export,
