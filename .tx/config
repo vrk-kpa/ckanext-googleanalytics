@@ -1,0 +1,9 @@
+[main]
+host = https://www.transifex.com
+
+[ytp.ckanext-googleanalytics]
+file_filter = ckanext/googleanalytics/i18n/<lang>/LC_MESSAGES/ckanext-googleanalytics.po
+source_file = ckanext/googleanalytics/i18n/ckanext-googleanalytics.pot
+source_lang = en
+type = PO
+
