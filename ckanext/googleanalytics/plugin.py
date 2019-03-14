@@ -54,6 +54,7 @@ class GoogleAnalyticsPlugin(p.SingletonPlugin, DefaultTranslation):
     p.implements(p.IRoutes, inherit=True)
     p.implements(p.IConfigurer, inherit=True)
     p.implements(p.ITemplateHelpers)
+    p.implements(p.IActions, inherit=True)
     p.implements(IReport)
     p.implements(p.ITranslation)
 
@@ -104,6 +105,11 @@ class GoogleAnalyticsPlugin(p.SingletonPlugin, DefaultTranslation):
         p.toolkit.add_template_directory(config, 'templates')
         p.toolkit.add_resource('public/javascript/', 'ckanext-googleanalytics_js')
         p.toolkit.add_public_directory(config, 'public')
+
+    # IActions
+    def get_actions(self):
+        from ckanext.googleanalytics.logic.action import get as action_get
+        return {'googleanalytics_dataset_visits': action_get.googleanalytics_dataset_visits}
 
     def before_map(self, map):
         '''Add new routes that this extension's controllers handle.
