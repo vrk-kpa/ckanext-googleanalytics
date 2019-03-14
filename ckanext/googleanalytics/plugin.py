@@ -8,7 +8,6 @@ import paste.deploy.converters as converters
 import ckan.lib.helpers as h
 import ckan.plugins as p
 from ckanext.report.interfaces import IReport
-
 from routes.mapper import SubMapper, Mapper as _Mapper
 
 import threading
@@ -53,6 +52,7 @@ class GoogleAnalyticsPlugin(p.SingletonPlugin):
     p.implements(p.IRoutes, inherit=True)
     p.implements(p.IConfigurer, inherit=True)
     p.implements(p.ITemplateHelpers)
+    p.implements(p.IActions, inherit=True)
     p.implements(IReport)
 
     analytics_queue = Queue.Queue()
@@ -100,6 +100,11 @@ class GoogleAnalyticsPlugin(p.SingletonPlugin):
     # IConfigurer
     def update_config(self, config):
         p.toolkit.add_template_directory(config, 'templates')
+
+    # IActions
+    def get_actions(self):
+        from ckanext.googleanalytics.logic.action import get as action_get
+        return {'googleanalytics_dataset_visits': action_get.googleanalytics_dataset_visits}
 
     def before_map(self, map):
         '''Add new routes that this extension's controllers handle.
