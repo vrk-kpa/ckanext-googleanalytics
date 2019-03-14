@@ -160,6 +160,18 @@ class GACommand(p.toolkit.CkanCommand):
         if len(args) == 3:
             given_start_date = datetime.datetime.strptime(args[2], '%Y-%m-%d').date()
 
+        botFilters = [
+            'ga:browser!@StatusCake',
+            'ga:browser!@Python',
+            'ga:sessionDurationBucket!=0',
+            'ga:sessionDurationBucket!=1',
+            'ga:sessionDurationBucket!=2',
+            'ga:sessionDurationBucket!=3',
+            'ga:networkDomain!=ua.es',
+            'ga:networkDomain!=amazonaws.com',
+            'ga:networkDomain!=kcura.com',
+            'ga:networkDomain!=relativity.com',
+        ]
         # list of queries to send to analytics
         queries = [{
             'type': 'package',
@@ -173,7 +185,7 @@ class GACommand(p.toolkit.CkanCommand):
         }, {
             'type': 'visitorlocation',
             'dates': self.get_dates_between_update(given_start_date, AudienceLocationDate.get_latest_update_date()),
-            'filters': None,
+            'filters': ";".join(botFilters),
             'metrics': 'ga:sessions',
             'sort': '-ga:sessions',
             'dimensions': 'ga:country, ga:date',
