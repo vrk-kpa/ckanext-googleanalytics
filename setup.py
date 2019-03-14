@@ -27,5 +27,12 @@ setup(
 
     [ckan.plugins]
     googleanalytics = ckanext.googleanalytics.plugin:GoogleAnalyticsPlugin
-    '''
+    ''',
+    message_extractors={
+        'ckanext': [
+            ('**.py', 'python', None),
+            ('**.js', 'javascript', None),
+            ('**/templates/**.html', 'ckan', None),
+        ],
+    }
 )

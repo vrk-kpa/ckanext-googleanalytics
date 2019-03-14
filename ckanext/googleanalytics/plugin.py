@@ -8,8 +8,9 @@ import paste.deploy.converters as converters
 import ckan.lib.helpers as h
 import ckan.plugins as p
 from ckanext.report.interfaces import IReport
-
 from routes.mapper import SubMapper, Mapper as _Mapper
+
+from ckan.lib.plugins import DefaultTranslation
 
 import threading
 import Queue
@@ -47,13 +48,14 @@ class AnalyticsPostThread(threading.Thread):
             # signals to queue job is done
             self.queue.task_done()
 
-class GoogleAnalyticsPlugin(p.SingletonPlugin):
+class GoogleAnalyticsPlugin(p.SingletonPlugin, DefaultTranslation):
 
     p.implements(p.IConfigurable, inherit=True)
     p.implements(p.IRoutes, inherit=True)
     p.implements(p.IConfigurer, inherit=True)
     p.implements(p.ITemplateHelpers)
     p.implements(IReport)
+    p.implements(p.ITranslation)
 
     analytics_queue = Queue.Queue()
 
