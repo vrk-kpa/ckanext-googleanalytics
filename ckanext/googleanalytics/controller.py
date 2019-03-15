@@ -1,26 +1,18 @@
 import logging
-from ckan.lib.base import BaseController, c, render, request
+from ckan.lib.base import c
 
-import urllib
-import urllib2
-
-import ckan.logic as logic
 import hashlib
 import plugin
 from pylons import config
-
-from webob.multidict import UnicodeMultiDict
-from paste.util.multidict import MultiDict
 
 from ckan.controllers.api import ApiController
 from ckan.controllers.package import PackageController
 import ckan.plugins as p
 
-
 log = logging.getLogger('ckanext.googleanalytics')
 
-def _post_analytics(
-        user, request_obj_type, request_function, request_description, request_id, environ=None):
+
+def _post_analytics(user, request_obj_type, request_function, request_description, request_id, environ=None):
     environ = environ or c.environ
     if config.get('googleanalytics.id') or config.get('googleanalytics.test_mode'):
         data_dict = {
@@ -33,7 +25,7 @@ def _post_analytics(
             "dp": environ['PATH_INFO'],
             "dr": environ.get('HTTP_REFERER', ''),
             "ec": request_description,
-            "ea": request_obj_type+request_function,
+            "ea": request_obj_type + request_function,
             "el": request_id,
         }
         plugin.GoogleAnalyticsPlugin.analytics_queue.put(data_dict)
@@ -57,6 +49,7 @@ class GAApiController(ApiController):
 OptionalController = PackageController
 if p.plugin_loaded('cloudstorage'):
     from ckanext.cloudstorage.controller import StorageController
+
     OptionalController = StorageController
 
 

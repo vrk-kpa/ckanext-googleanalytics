@@ -1,7 +1,6 @@
-import uuid
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 
-from sqlalchemy import types, func, Column, ForeignKey, Table, not_
+from sqlalchemy import types, func, Column, ForeignKey, not_
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -10,6 +9,7 @@ import ckan.model as model
 log = __import__('logging').getLogger(__name__)
 
 Base = declarative_base()
+
 
 class PackageStats(Base):
     """
@@ -45,7 +45,7 @@ class PackageStats(Base):
         else:
             package.visits = visits
 
-        log.debug("Number of visits for date: %s updated for package id: %s",visit_date,item_id)
+        log.debug("Number of visits for date: %s updated for package id: %s", visit_date, item_id)
         model.Session.flush()
         return True
 
@@ -71,17 +71,18 @@ class PackageStats(Base):
         start_date = datetime(year, 1, 1)
         end_date = datetime(year, 12, 31)
         package_visits = model.Session.query(cls).filter(cls.package_id == resource_id) \
-                                                 .filter(cls.visit_date >= start_date) \
-                                                 .filter(cls.visit_date <= end_date) \
-                                                 .all()
+            .filter(cls.visit_date >= start_date) \
+            .filter(cls.visit_date <= end_date) \
+            .all()
 
         return package_visits
 
     @classmethod
     def get_last_visits_by_id(cls, resource_id, num_days=30):
         start_date = datetime.now() - timedelta(num_days)
-        package_visits = model.Session.query(cls).filter(cls.package_id == resource_id).filter(cls.visit_date >= start_date).all()
-        #Returns the total number of visits since the beggining of all times
+        package_visits = model.Session.query(cls).filter(cls.package_id == resource_id).filter(
+            cls.visit_date >= start_date).all()
+        # Returns the total number of visits since the beggining of all times
         total_visits = model.Session.query(func.sum(cls.visits)).filter(cls.package_id == resource_id).scalar()
         visits = {}
 
@@ -90,19 +91,20 @@ class PackageStats(Base):
 
         return visits
 
-
     @classmethod
     def get_top(cls, limit=20):
         package_stats = []
-        #TODO: Reimplement in more efficient manner if needed (using RANK OVER and PARTITION in raw sql)
-        unique_packages = model.Session.query(cls.package_id, func.count(cls.visits)).group_by(cls.package_id).order_by(func.count(cls.visits).desc()).limit(limit).all()
-        #Adding last date associated to this package stat and filtering out private and deleted packages
+        # TODO: Reimplement in more efficient manner if needed (using RANK OVER and PARTITION in raw sql)
+        unique_packages = model.Session.query(cls.package_id, func.count(cls.visits)).group_by(cls.package_id).order_by(
+            func.count(cls.visits).desc()).limit(limit).all()
+        # Adding last date associated to this package stat and filtering out private and deleted packages
         if unique_packages is not None:
             for package in unique_packages:
                 package_id = package[0]
                 visits = package[1]
 
-                tot_package = model.Session.query(model.Package).filter(model.Package.id == package_id).filter_by(state='active').filter_by(private=False).first()
+                tot_package = model.Session.query(model.Package).filter(model.Package.id == package_id).filter_by(
+                    state='active').filter_by(private=False).first()
                 if tot_package is None:
                     continue
 
@@ -110,11 +112,11 @@ class PackageStats(Base):
 
                 ps = PackageStats(package_id=package_id, visit_date=last_date[0], visits=visits)
                 package_stats.append(ps)
-        dictat = PackageStats.convert_to_dict(package_stats,None)
+        dictat = PackageStats.convert_to_dict(package_stats, None)
         return dictat
 
     @classmethod
-    def get_all_visits(cls,dataset_id):
+    def get_all_visits(cls, dataset_id):
 
         visits_dict = PackageStats.get_last_visits_by_id(dataset_id)
         resource_visits_dict = ResourceStats.get_last_visits_by_dataset_id(dataset_id)
@@ -128,7 +130,7 @@ class PackageStats(Base):
 
         now = datetime.now() - timedelta(days=1)
 
-        #Creates a date object for the last 30 days in the format (YEAR, MONTH, DAY)
+        # Creates a date object for the last 30 days in the format (YEAR, MONTH, DAY)
         for d in range(0, 30):
             curr = now - timedelta(d)
             visit_list.append({'year': curr.year, 'month': curr.month, 'day': curr.day, 'visits': 0, "downloads": 0})
@@ -137,18 +139,21 @@ class PackageStats(Base):
             visit_date_str = t['visit_date']
             if visit_date_str is not None:
                 visit_date = datetime.strptime(visit_date_str, "%d-%m-%Y")
-                #Build temporary match
-                visit_item = next((x for x in visit_list if x['year'] == visit_date.year and x['month'] == visit_date.month and x['day'] == visit_date.day), None)
+                # Build temporary match
+                visit_item = next((x for x in visit_list if
+                                   x['year'] == visit_date.year and x['month'] == visit_date.month and x[
+                                       'day'] == visit_date.day), None)
                 if visit_item:
                     visit_item['visits'] = t['visits']
-
 
         for r in resource_visits:
             visit_date_str = r['visit_date']
             if visit_date_str is not None:
                 visit_date = datetime.strptime(visit_date_str, "%d-%m-%Y")
-                #Build temporary match
-                visit_item = next((x for x in visit_list if x['year'] == visit_date.year and x['month'] == visit_date.month and x['day'] == visit_date.day), None)
+                # Build temporary match
+                visit_item = next((x for x in visit_list if
+                                   x['year'] == visit_date.year and x['month'] == visit_date.month and x[
+                                       'day'] == visit_date.day), None)
                 if visit_item:
                     visit_item['downloads'] += r['visits']
 
@@ -176,7 +181,7 @@ class PackageStats(Base):
             visits.append(PackageStats.as_dict(resource))
 
         results = {
-           "packages": visits,
+            "packages": visits,
         }
         if tot_visits is not None:
             results["tot_visits"] = tot_visits
@@ -189,6 +194,7 @@ class PackageStats(Base):
             return None
         else:
             return result.visit_date
+
 
 class ResourceStats(Base):
     """
@@ -224,7 +230,7 @@ class ResourceStats(Base):
             resource.visits = visits
             resource.visit_date = visit_date
 
-        log.debug("Number of visits updated for resource id: %s",item_id)
+        log.debug("Number of visits updated for resource id: %s", item_id)
         model.Session.flush()
         return True
 
@@ -237,33 +243,35 @@ class ResourceStats(Base):
         if resource is not None:
             res_package_name = resource.package.title or resource.package.name
             res_package_id = resource.package.name
-            res_name  = resource.description or resource.format
+            res_name = resource.description or resource.format
         return [res_name, res_package_name, res_package_id]
 
     @classmethod
     def get_last_visits_by_id(cls, resource_id, num_days=30):
         start_date = datetime.now() - timedelta(num_days)
-        resource_visits = model.Session.query(cls).filter(cls.resource_id == resource_id).filter(cls.visit_date >= start_date).all()
-        #Returns the total number of visits since the beggining of all times
+        resource_visits = model.Session.query(cls).filter(cls.resource_id == resource_id).filter(
+            cls.visit_date >= start_date).all()
+        # Returns the total number of visits since the beggining of all times
         total_visits = model.Session.query(func.sum(cls.visits)).filter(cls.resource_id == resource_id).scalar()
         visits = {}
         if total_visits is not None:
             visits = ResourceStats.convert_to_dict(resource_visits, total_visits)
         return visits
 
-
     @classmethod
     def get_top(cls, limit=20):
         resource_stats = []
-        #TODO: Reimplement in more efficient manner if needed (using RANK OVER and PARTITION in raw sql)
-        unique_resources = model.Session.query(cls.resource_id, func.count(cls.visits)).group_by(cls.resource_id).order_by(func.count(cls.visits).desc()).limit(limit).all()
-        #Adding last date associated to this package stat and filtering out private and deleted packages
+        # TODO: Reimplement in more efficient manner if needed (using RANK OVER and PARTITION in raw sql)
+        unique_resources = model.Session.query(cls.resource_id, func.count(cls.visits)).group_by(cls.resource_id).order_by(
+            func.count(cls.visits).desc()).limit(limit).all()
+        # Adding last date associated to this package stat and filtering out private and deleted packages
         if unique_resources is not None:
             for resource in unique_resources:
                 resource_id = resource[0]
                 visits = resource[1]
-                #TODO: Check if associated resource is private
-                resource = model.Session.query(model.Resource).filter(model.Resource.id == resource_id).filter_by(state='active').first()
+                # TODO: Check if associated resource is private
+                resource = model.Session.query(model.Resource).filter(model.Resource.id == resource_id).filter_by(
+                    state='active').first()
                 if resource is None:
                     continue
 
@@ -271,12 +279,11 @@ class ResourceStats(Base):
 
                 rs = ResourceStats(resource_id=resource_id, visit_date=last_date[0], visits=visits)
                 resource_stats.append(rs)
-        dictat = ResourceStats.convert_to_dict(resource_stats,None)
+        dictat = ResourceStats.convert_to_dict(resource_stats, None)
         return dictat
 
-
     @classmethod
-    def as_dict(cls,res):
+    def as_dict(cls, res):
         result = {}
         res_info = ResourceStats.get_resource_info_by_id(res.resource_id)
         result['resource_name'] = res_info[0]
@@ -288,13 +295,13 @@ class ResourceStats(Base):
         return result
 
     @classmethod
-    def convert_to_dict(cls,resource_stats, tot_visits):
+    def convert_to_dict(cls, resource_stats, tot_visits):
         visits = []
         for resource in resource_stats:
             visits.append(ResourceStats.as_dict(resource))
 
         results = {
-           "resources": visits
+            "resources": visits
         }
         if tot_visits is not None:
             results['tot_visits'] = tot_visits
@@ -305,21 +312,22 @@ class ResourceStats(Base):
     def get_last_visits_by_url(cls, url, num_days=30):
         resource = model.Session.query(model.Resource).filter(model.Resource.url == url).first()
         start_date = datetime.now() - timedelta(num_days)
-        #Returns the total number of visits since the beggining of all times for the associated resource to the given url
+        # Returns the total number of visits since the beggining of all times for the associated resource to the given url
         total_visits = model.Session.query(func.sum(cls.visits)).filter(cls.resource_id == resource.id).first().scalar()
-        resource_stats = model.Session.query(cls).filter(cls.resource_id == resource.id).filter(cls.visit_date >= start_date).all()
+        resource_stats = model.Session.query(cls).filter(cls.resource_id == resource.id).filter(
+            cls.visit_date >= start_date).all()
         visits = ResourceStats.convert_to_dict(resource_stats, total_visits)
 
         return visits
 
-
     @classmethod
     def get_last_visits_by_dataset_id(cls, package_id, num_days=30):
-        #Fetch all resources associated to this package id
+        # Fetch all resources associated to this package id
         subquery = model.Session.query(model.Resource.id).filter(model.Resource.package_id == package_id).subquery()
 
         start_date = datetime.now() - timedelta(num_days)
-        resource_stats = model.Session.query(cls).filter(cls.resource_id.in_(subquery)).filter(cls.visit_date >= start_date).all()
+        resource_stats = model.Session.query(cls).filter(cls.resource_id.in_(subquery)).filter(
+            cls.visit_date >= start_date).all()
         total_visits = model.Session.query(func.sum(cls.visits)).filter(cls.resource_id.in_(subquery)).scalar()
         visits = ResourceStats.convert_to_dict(resource_stats, total_visits)
 
@@ -327,7 +335,7 @@ class ResourceStats(Base):
 
     @classmethod
     def get_visits_during_last_calendar_year_by_dataset_id(cls, package_id):
-        # Returns a list of visits during the last calendar year. 
+        # Returns a list of visits during the last calendar year.
         last_year = datetime.now().year - 1
         first_day = datetime(year=last_year, day=1, month=1)
         last_day = datetime(year=last_year, day=31, month=12)
@@ -337,31 +345,33 @@ class ResourceStats(Base):
     def get_visits_by_dataset_id_between_two_dates(cls, package_id, start_date, end_date):
         # Returns a list of visits between the dates
         subquery = model.Session.query(model.Resource.id).filter(model.Resource.package_id == package_id).subquery()
-        visits = model.Session.query(cls).filter(cls.resource_id.in_(subquery)).filter(cls.visit_date >= start_date).filter(cls.visit_date <= end_date).all()
+        visits = model.Session.query(cls).filter(cls.resource_id.in_(subquery)).filter(cls.visit_date >= start_date).filter(
+            cls.visit_date <= end_date).all()
         return visits
 
     @classmethod
-    def get_all_visits(cls,id):
+    def get_all_visits(cls, id):
         visits_dict = ResourceStats.get_last_visits_by_id(id)
         count = visits_dict.get('tot_visits', 0)
         visits = visits_dict.get('resources', [])
         visit_list = []
 
-        now = datetime.now() -timedelta(days=1)
+        now = datetime.now() - timedelta(days=1)
 
-        #Creates a temporary date object for the last 30 days in the format (YEAR, MONTH, DAY, #visits this day)
-        #If there is no entry for a certain date should return 0 visits
+        # Creates a temporary date object for the last 30 days in the format (YEAR, MONTH, DAY, #visits this day)
+        # If there is no entry for a certain date should return 0 visits
         for d in range(0, 30):
             curr = now - timedelta(d)
             visit_list.append({'year': curr.year, 'month': curr.month, 'day': curr.day, 'visits': 0})
-
 
         for t in visits:
             visit_date_str = t['visit_date']
             if visit_date_str is not None:
                 visit_date = datetime.strptime(visit_date_str, "%d-%m-%Y")
-                #Build temporary match
-                visit_item = next((x for x in visit_list if x['year'] == visit_date.year and x['month'] == visit_date.month and x['day'] == visit_date.day), None)
+                # Build temporary match
+                visit_item = next((x for x in visit_list if
+                                   x['year'] == visit_date.year and x['month'] == visit_date.month and x[
+                                       'day'] == visit_date.day), None)
                 if visit_item:
                     visit_item['visits'] = t['visits']
 
@@ -370,6 +380,7 @@ class ResourceStats(Base):
             "count": count
         }
         return results
+
 
 class AudienceLocation(Base):
     """
@@ -388,7 +399,7 @@ class AudienceLocation(Base):
         return model.Session.query(cls).filter(cls.id == id).first()
 
     @classmethod
-    def update_location(cls, name):
+    def update_location(cls, location_name):
         # Check if the location can be found
         location = model.Session.query(cls).filter(cls.location_name == location_name)
         if location is None:
@@ -397,11 +408,12 @@ class AudienceLocation(Base):
             model.Session.add(location)
             log.debug("New location added: %s", location_name)
         else:
-            location.location_name = name
+            location.location_name = location_name
             log.debug("Location name updated: %s", location_name)
 
         model.Session.flush()
         return True
+
 
 class AudienceLocationDate(Base):
     """
@@ -412,7 +424,7 @@ class AudienceLocationDate(Base):
 
     id = Column(types.Integer, primary_key=True, autoincrement=True, unique=True)
     date = Column(types.DateTime, default=datetime.now, primary_key=True)
-    
+
     visits = Column(types.Integer)
     location_id = Column(types.Integer, ForeignKey('audience_location.id'))
 
@@ -427,7 +439,7 @@ class AudienceLocationDate(Base):
         :param date: last visit date
         :param visits: number of visits until visit_date
         :return: True for a successful update, otherwise False
-        '''        
+        '''
         # find location_id by name
         location = model.Session.query(AudienceLocation).filter(AudienceLocation.location_name == location_name).first()
 
@@ -438,7 +450,8 @@ class AudienceLocationDate(Base):
             model.Session.commit()
 
         # find if location already has views for that date
-        location_by_date = model.Session.query(cls).filter(cls.location_id == location.id).filter(cls.date == visit_date).first()
+        location_by_date = model.Session.query(cls).filter(cls.location_id == location.id).filter(
+            cls.date == visit_date).first()
         # if not add them as a new row
         if location_by_date is None:
             location_by_date = AudienceLocationDate(location_id=location.id, date=visit_date, visits=visits)
@@ -466,11 +479,11 @@ class AudienceLocationDate(Base):
         ]
         '''
         data = model.Session.query(cls.visits, cls.date, cls.location_id) \
-                            .filter(cls.date >= start_date) \
-                            .filter(cls.date <= end_date) \
-                            .order_by(cls.date.desc()) \
-                            .all()
-        
+            .filter(cls.date >= start_date) \
+            .filter(cls.date <= end_date) \
+            .order_by(cls.date.desc()) \
+            .all()
+
         return cls.convert_list_to_dicts(data)
 
     @classmethod
@@ -485,11 +498,11 @@ class AudienceLocationDate(Base):
         }
         '''
         total_visits = model.Session.query(func.sum(cls.visits)) \
-                                        .filter(cls.date >= start_date) \
-                                        .filter(cls.date <= end_date) \
-                                        .scalar()
-        
-        return { "total_visits": total_visits }
+            .filter(cls.date >= start_date) \
+            .filter(cls.date <= end_date) \
+            .scalar()
+
+        return {"total_visits": total_visits}
 
     @classmethod
     def get_total_visits_by_location(cls, start_date, end_date, location_name):
@@ -519,11 +532,11 @@ class AudienceLocationDate(Base):
         location_id = cls.get_location_id_by_name(location_name)
 
         total_visits = model.Session.query(func.sum(cls.visits)).filter(maybe_negate(cls.location_id, location_id, negate)) \
-                                                                .filter(cls.date >= start_date) \
-                                                                .filter(cls.date <= end_date) \
-                                                                .scalar()
-        
-        return { "total_visits": total_visits }
+            .filter(cls.date >= start_date) \
+            .filter(cls.date <= end_date) \
+            .scalar()
+
+        return {"total_visits": total_visits}
 
     @classmethod
     def get_total_top_locations(cls, limit=20):
@@ -543,7 +556,7 @@ class AudienceLocationDate(Base):
             .order_by(func.sum(cls.visits).desc()) \
             .limit(limit) \
             .all()
-        
+
         return cls.convert_list_to_dicts(locations)
 
     @classmethod
@@ -560,16 +573,14 @@ class AudienceLocationDate(Base):
 
     @classmethod
     def special_total_by_months(cls, start_date=None, end_date=None):
-        if end_date == None:
+        if end_date is None:
             # last day of last month
-            end_date = datetime.today().replace(day = 1) - timedelta(days = 1)
-        if start_date == None:
-            start_date = end_date - timedelta(days = 365) # one year
+            end_date = datetime.today().replace(day=1) - timedelta(days=1)
+        if start_date is None:
+            start_date = end_date - timedelta(days=365)  # one year
 
         visits = cls.get_visits(start_date=start_date, end_date=end_date)
 
-        grouped = {}
-        
         unique_months = []
         results = []
 
@@ -581,10 +592,10 @@ class AudienceLocationDate(Base):
                         x['visits'] += item['visits']
             else:
                 unique_months.append(combined_date)
-                results.append({ 'combined_date': combined_date, 'date': item['date'].__str__(), 'visits': item['visits'] })
+                results.append({'combined_date': combined_date, 'date': item['date'].__str__(), 'visits': item['visits']})
 
         results.sort(key=lambda x: x['date'])
-        
+
         return results
 
     @classmethod
@@ -607,7 +618,7 @@ class AudienceLocationDate(Base):
             return None
         else:
             return result.date
-    
+
     @classmethod
     def as_dict(cls, location):
         result = {}
@@ -631,12 +642,13 @@ class AudienceLocationDate(Base):
 
         return visits
 
+
 def maybe_negate(value, inputvalue, negate=False):
     if negate:
         return not_(value == inputvalue)
     return (value == inputvalue)
 
+
 def init_tables(engine):
     Base.metadata.create_all(engine)
     log.info('Google analytics database tables are set-up')
-

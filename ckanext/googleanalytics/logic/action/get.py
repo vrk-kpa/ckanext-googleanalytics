@@ -1,6 +1,7 @@
 from ckanext.googleanalytics.model import PackageStats
 from ckan.plugins import toolkit
 
+
 @toolkit.side_effect_free
 def googleanalytics_dataset_visits(context=None, data_dict=None):
     """
@@ -13,4 +14,3 @@ def googleanalytics_dataset_visits(context=None, data_dict=None):
     :rtype: integer
     """
     return PackageStats.get_all_visits(data_dict['id'])
-

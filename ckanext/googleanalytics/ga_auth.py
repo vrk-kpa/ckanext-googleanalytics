@@ -1,9 +1,8 @@
-import os
-import httplib2
 from apiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
 
 from pylons import config
+
 
 def get_service(api_name, api_version, scopes, key_file_location):
     """Get a service that communicates to a Google API.
@@ -19,12 +18,13 @@ def get_service(api_name, api_version, scopes, key_file_location):
     """
 
     credentials = ServiceAccountCredentials.from_json_keyfile_name(
-            key_file_location, scopes=scopes)
+        key_file_location, scopes=scopes)
 
     # Build the service object.
     service = build(api_name, api_version, credentials=credentials, cache_discovery=False)
 
     return service
+
 
 # https://developers.google.com/analytics/devguides/reporting/core/v3/quickstart/service-py
 def init_service(credentials_file):
@@ -38,11 +38,10 @@ def init_service(credentials_file):
 
     # Authenticate and construct service.
     service = get_service(
-            api_name='analytics',
-            api_version='v3',
-            scopes=[scope],
-            key_file_location=credentials_file)
-
+        api_name='analytics',
+        api_version='v3',
+        scopes=[scope],
+        key_file_location=credentials_file)
 
     return service
 

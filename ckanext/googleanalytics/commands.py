@@ -2,15 +2,12 @@ import os
 import re
 import logging
 import datetime
-import time
 
 from pylons import config as pylonsconfig
-from ckan.lib.cli import CkanCommand
 import ckan.model as model
-from ckan.logic.action import get
 
 import ckan.plugins as p
-from ckanext.googleanalytics.model import PackageStats, ResourceStats, AudienceLocation, AudienceLocationDate
+from ckanext.googleanalytics.model import PackageStats, ResourceStats, AudienceLocationDate
 
 PACKAGE_URL = '/dataset/'  # XXX get from routes...
 DEFAULT_RESOURCE_URL_TAG = '/download/'
@@ -20,7 +17,7 @@ DATASET_EDIT_REGEX = re.compile('/dataset/edit/([a-z0-9-_]+)')
 
 
 class GACommand(p.toolkit.CkanCommand):
-    """" 
+    """"
     Google analytics command
 
     Usage::
@@ -30,7 +27,7 @@ class GACommand(p.toolkit.CkanCommand):
          results
 
        paster googleanalytics initservice <credentials_file>
-         - Initializes the service 
+         - Initializes the service
            Where <credentials_file> is the file name containing the details
            for the service (obtained from https://console.developers.google.com/iam-admin/serviceaccounts).
            By default this is set to credentials.json
@@ -54,7 +51,7 @@ class GACommand(p.toolkit.CkanCommand):
         Parse command line arguments and call appropiate method.
         """
         if not self.args or self.args[0] in ['--help', '-h', 'help']:
-            print QACommand.__doc__
+            print GACommand.__doc__
             return
 
         cmd = self.args[0]
@@ -73,7 +70,7 @@ class GACommand(p.toolkit.CkanCommand):
         elif cmd == 'test':
             self.test_queries()
         else:
-            self.log.error('Command "%s" not recognized' %(cmd,))
+            self.log.error('Command "%s" not recognized' % (cmd,))
 
     def init_db(self):
         from ckanext.googleanalytics.model import init_tables
@@ -87,7 +84,7 @@ class GACommand(p.toolkit.CkanCommand):
         credentialsfile = args[1]
         if not os.path.exists(credentialsfile):
             raise Exception('Cannot find the credentials file %s' % credentialsfile)
-        
+
         try:
             self.service = init_service(credentialsfile)
         except TypeError:
@@ -112,7 +109,6 @@ class GACommand(p.toolkit.CkanCommand):
 
         self.parse_and_save(args)
 
-
     def ga_query(self, filters, metrics, sort, dimensions, start_date=None, end_date=None):
         """
         Get raw data from Google Analtyics.
@@ -133,19 +129,19 @@ class GACommand(p.toolkit.CkanCommand):
         max_results = 10000
 
         print '%s -> %s' % (start_date, end_date)
-        
+
         results = self.service.data().ga().get(ids='ga:%s' % self.profile_id,
-                                 filters=filters,
-                                 dimensions=dimensions,
-                                 start_date=start_date,
-                                 end_date=end_date,
-                                 start_index=start_index,
-                                 max_results=max_results,
-                                 metrics=metrics,
-                                 sort=sort
-                                 ).execute()
+                                               filters=filters,
+                                               dimensions=dimensions,
+                                               start_date=start_date,
+                                               end_date=end_date,
+                                               start_index=start_index,
+                                               max_results=max_results,
+                                               metrics=metrics,
+                                               sort=sort
+                                               ).execute()
         return results
-          
+
     def parse_and_save(self, args):
         """Grab raw data from Google Analytics and save to the database"""
         from ga_auth import get_profile_id
@@ -208,17 +204,16 @@ class GACommand(p.toolkit.CkanCommand):
                                         metrics=query['metrics'],
                                         sort=query['sort'],
                                         dimensions=query['dimensions'])
-                
+
                 # parse query
                 resolver = query['resolver']
                 data = resolver(query['type'], results, data)
                 current = date
-            
+
             save_function = query['save']
             save_function(query['type'], data)
             model.Session.commit()
             self.log.info("Successfully saved analytics query of type: %s" % query['type'])
-
 
     def get_dates_between_update(self, start_date, latest_date=None):
         now = datetime.datetime.now()
@@ -229,15 +224,15 @@ class GACommand(p.toolkit.CkanCommand):
 
         if start_date is not None:
             floor_date = start_date
-        
+
         if latest_date is not None:
             floor_date = latest_date - datetime.timedelta(days=2)
-        
+
         current_month = datetime.date(now.year, now.month, 1)
         dates = []
 
-        #If floor date and current month belong to the same month no need to add backward months
-        if current_month != datetime.date(floor_date.year,floor_date.month,1):
+        # If floor date and current month belong to the same month no need to add backward months
+        if current_month != datetime.date(floor_date.year, floor_date.month, 1):
             while current_month > datetime.date(floor_date.year, floor_date.month, floor_date.day):
                 dates.append(current_month)
                 current_month = current_month - datetime.timedelta(days=30)
@@ -251,8 +246,8 @@ class GACommand(p.toolkit.CkanCommand):
             matches = RESOURCE_URL_REGEX.match(identifier)
             if matches:
                 resource_url = identifier[len(self.resource_url_tag):]
-                resource = model.Session.query(model.Resource).autoflush(True)\
-                        .filter_by(id=matches.group(1)).first()
+                resource = model.Session.query(model.Resource).autoflush(True) \
+                    .filter_by(id=matches.group(1)).first()
                 if not resource:
                     self.log.warning("Couldn't find resource %s" % resource_url)
                     continue
@@ -293,7 +288,7 @@ class GACommand(p.toolkit.CkanCommand):
                 # removes /data/ from the url
                 if package.startwith('/data/'):
                     package = package[len('/data'):]
-                
+
                 # if package contains a language it is removed
                 # the visit count for a dataset is all visits to different languages added together
                 if package.startswith('/fi/') or package.startswith('/sv/') or package.startswith('/en/'):
@@ -306,7 +301,7 @@ class GACommand(p.toolkit.CkanCommand):
 
                 val = 0
                 # add querytype if not already there
-                if not querytype in data:
+                if querytype not in data:
                     data.setdefault(querytype, {})
                 # Adds visits in different languages together
                 if package in data[querytype] and "visits" in data[querytype][package]:
@@ -314,7 +309,7 @@ class GACommand(p.toolkit.CkanCommand):
                         val += data[querytype][package]["visits"][visit_date]
                 else:
                     data[querytype].setdefault(package, {})["visits"] = {}
-                data[querytype][package]['visits'][visit_date] =  int(count) + val
+                data[querytype][package]['visits'][visit_date] = int(count) + val
         return data
 
     def resolver_type_visitorlocation(self, querytype, results, data):
@@ -332,9 +327,9 @@ class GACommand(p.toolkit.CkanCommand):
 
                 visit_date = datetime.datetime.strptime(date, "%Y%m%d").date()
                 # add querytype if not already in data
-                if not querytype in data:
+                if querytype not in data:
                     data.setdefault(querytype, {})
-                if not location in data[querytype]:
+                if location not in data[querytype]:
                     data[querytype].setdefault(location, {})["visits"] = {}
                 data[querytype][location]['visits'][visit_date] = int(count)
         return data
