@@ -69,6 +69,10 @@ class GACommand(p.toolkit.CkanCommand):
             self.load_analytics(self.args)
         elif cmd == 'test':
             self.test_queries()
+        elif cmd == 'initloadtest':
+            self.init_db()
+            self.load_analytics(self.args)
+            self.test_queries()
         else:
             self.log.error('Command "%s" not recognized' % (cmd,))
 
@@ -189,8 +193,6 @@ class GACommand(p.toolkit.CkanCommand):
             'save': self.save_type_visitorlocation,
         }]
 
-        queries = [queries[1]]
-
         # loop through queries, parse and save them to db
         for query in queries:
             data = {}
@@ -204,7 +206,6 @@ class GACommand(p.toolkit.CkanCommand):
                                         metrics=query['metrics'],
                                         sort=query['sort'],
                                         dimensions=query['dimensions'])
-
                 # parse query
                 resolver = query['resolver']
                 data = resolver(query['type'], results, data)
@@ -286,7 +287,7 @@ class GACommand(p.toolkit.CkanCommand):
                 # this is still specific for packages query
                 package = result[0]
                 # removes /data/ from the url
-                if package.startwith('/data/'):
+                if package.startswith('/data/'):
                     package = package[len('/data'):]
 
                 # if package contains a language it is removed
@@ -310,6 +311,7 @@ class GACommand(p.toolkit.CkanCommand):
                 else:
                     data[querytype].setdefault(package, {})["visits"] = {}
                 data[querytype][package]['visits'][visit_date] = int(count) + val
+        
         return data
 
     def resolver_type_visitorlocation(self, querytype, results, data):
@@ -335,4 +337,7 @@ class GACommand(p.toolkit.CkanCommand):
         return data
 
     def test_queries(self):
-        AudienceLocationDate.special_total_by_months()
+        last_month_end = datetime.datetime.today().replace(day=1) - datetime.timedelta(days=1)
+        last_month_start = last_month_end.replace(day=1)
+        stats = PackageStats.get_total_visits(start_date=last_month_start, end_date=last_month_end, limit=20)
+        print 'stats: %s' % stats

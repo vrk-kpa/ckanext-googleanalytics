@@ -58,6 +58,48 @@ class PackageStats(Base):
         return pack_name
 
     @classmethod
+    def get_visits(cls, start_date, end_date):
+        '''
+        Returns datasets and their visitors amount during time span, grouped by dates.
+
+        :param start_date: Date
+        :param end_date: Date
+        :return: [{ visits, package_id, package_name, visit_date }, ...]
+        '''
+        package_visits = model.Session.query(cls) \
+            .filter(cls.visit_date >= start_date) \
+            .filter(cls.visit_date <= end_date) \
+            .all()
+
+        return cls.convert_to_dict(package_visits, None)
+
+    @classmethod
+    def get_total_visits(cls, start_date, end_date, limit = 50):
+        '''
+        Returns datasets and their visitors amount summed during time span, grouped by dataset.
+
+        :param start_date: Date
+        :param end_date: Date
+        :return: [{ visits, package_id, package_name }, ...]
+        '''
+        visits_by_date = cls.get_visits(start_date, end_date)['packages']
+
+        unique_datasets = []
+        visits_by_dataset = []
+        for item in visits_by_date:
+            if item['package_id'] in unique_datasets:
+                for dataset in visits_by_dataset:
+                    if dataset['package_id'] == item['package_id']:
+                        dataset['visits'] += item['visits']
+            else:
+                unique_datasets.append(item['package_id'])
+                visits_by_dataset.append({ 'package_id': item['package_id'], 'visits': item['visits'], 'package_name': item['package_name'] })
+        
+        visits_by_dataset.sort(key=lambda x: x['visits'])
+
+        return visits_by_dataset
+
+    @classmethod
     def get_visits_during_year(cls, resource_id, year):
         '''
         Returns number of visitors during one calendar yearself.
