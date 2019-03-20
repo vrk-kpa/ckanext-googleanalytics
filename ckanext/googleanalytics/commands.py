@@ -189,8 +189,6 @@ class GACommand(p.toolkit.CkanCommand):
             'save': self.save_type_visitorlocation,
         }]
 
-        queries = [queries[1]]
-
         # loop through queries, parse and save them to db
         for query in queries:
             data = {}
@@ -286,7 +284,7 @@ class GACommand(p.toolkit.CkanCommand):
                 # this is still specific for packages query
                 package = result[0]
                 # removes /data/ from the url
-                if package.startwith('/data/'):
+                if package.startswith('/data/'):
                     package = package[len('/data'):]
 
                 # if package contains a language it is removed
