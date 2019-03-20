@@ -67,6 +67,7 @@ class GACommand(p.toolkit.CkanCommand):
             self.init_service(self.args)
         elif cmd == 'loadanalytics':
             self.load_analytics(self.args)
+        # TODO: remove these
         elif cmd == 'test':
             self.test_queries()
         elif cmd == 'initloadtest':
@@ -177,7 +178,7 @@ class GACommand(p.toolkit.CkanCommand):
             'type': 'package',
             'dates': self.get_dates_between_update(given_start_date, PackageStats.get_latest_update_date()),
             'filters': 'ga:pagePath=~%s,ga:pagePath=~%s' % (PACKAGE_URL, self.resource_url_tag),
-            'metrics': 'ga:uniquePageviews',
+            'metrics': 'ga:uniquePageviews, ga:entrances',
             'sort': '-ga:uniquePageviews',
             'dimensions': 'ga:pagePath, ga:date',
             'resolver': self.resolver_type_package,
@@ -243,7 +244,6 @@ class GACommand(p.toolkit.CkanCommand):
 
     def save_type_package(self, querytype, data):
         for identifier, visits_collection in data[querytype].items():
-            visits = visits_collection.get('visits', {})
             matches = RESOURCE_URL_REGEX.match(identifier)
             if matches:
                 resource_url = identifier[len(self.resource_url_tag):]
@@ -252,9 +252,12 @@ class GACommand(p.toolkit.CkanCommand):
                 if not resource:
                     self.log.warning("Couldn't find resource %s" % resource_url)
                     continue
-                for visit_date, count in visits.iteritems():
-                    ResourceStats.update_visits(resource.id, visit_date, count)
-                    self.log.info("Updated %s with %s visits" % (resource.id, count))
+                package_name = ResourceStats.get_resource_info_by_id(resource.id)[2]
+                package_id = model.Package.by_name(package_name).id
+                for date, value in visits_collection.iteritems():
+                    PackageStats.update_downloads(package_id=package_id, visit_date=date, downloads=value["visits"])
+                    ResourceStats.update_visits(resource.id, date, value["visits"])
+                    self.log.info("Updated %s with %s visits" % (resource.id, value["visits"]))
             else:
                 package_name = identifier[len(PACKAGE_URL):]
                 if "/" in package_name:
@@ -264,9 +267,9 @@ class GACommand(p.toolkit.CkanCommand):
                 if not item:
                     self.log.warning("Couldn't find package %s" % package_name)
                     continue
-                for visit_date, count in visits.iteritems():
-                    PackageStats.update_visits(item.id, visit_date, count)
-                    self.log.info("Updated %s with %s visits" % (item.id, count))
+                for date, value in visits_collection.iteritems():
+                    PackageStats.update_visits(item.id, date, value["visits"], value["entrances"])
+                    self.log.info("Updated %s with %s visits" % (item.id, value["visits"]))
 
     def save_type_visitorlocation(self, querytype, data):
         for location, visits_collection in data[querytype].items():
@@ -279,7 +282,7 @@ class GACommand(p.toolkit.CkanCommand):
         '''
         formats results and returns a dictionary like:
         {
-            'package': { 'cool-dataset-name': { 'visits': { 2019-02-24: 500, ... } }, ... },
+            'package': { 'cool-dataset-name': { 2019-02-24: { 'visits': 500,  'entrances': 400 }, ...}, ... },
         }
         '''
         if 'rows' in results:
@@ -296,22 +299,31 @@ class GACommand(p.toolkit.CkanCommand):
                     package = package[len('/fi'):]
 
                 visit_date = datetime.datetime.strptime(result[1], "%Y%m%d").date()
-                count = result[2]
+                visit_count = result[2]
+                entrance_count = result[3]
                 # Make sure we add the different representations of the same
                 # dataset /mysite.com & /www.mysite.com ...
 
-                val = 0
+                val_views = 0
+                val_entrances = 0
                 # add querytype if not already there
                 if querytype not in data:
                     data.setdefault(querytype, {})
+                
+                # add package if not already there
+                if package not in data[querytype]:
+                    data[querytype].setdefault(package, {})
+                
                 # Adds visits in different languages together
-                if package in data[querytype] and "visits" in data[querytype][package]:
-                    if visit_date in data[querytype][package]['visits']:
-                        val += data[querytype][package]["visits"][visit_date]
+                if visit_date in data[querytype][package]:
+                    val_views += data[querytype][package][visit_date]["visits"]
+                    val_entrances += data[querytype][package][visit_date]["entrances"]
                 else:
-                    data[querytype].setdefault(package, {})["visits"] = {}
-                data[querytype][package]['visits'][visit_date] = int(count) + val
-        
+                    data[querytype][package].setdefault(visit_date, {"visits": 0, "entrances": 0})
+                
+                data[querytype][package][visit_date]['visits'] = int(visit_count) + val_views
+                data[querytype][package][visit_date]['entrances'] = int(entrance_count) + val_entrances
+
         return data
 
     def resolver_type_visitorlocation(self, querytype, results, data):
@@ -339,5 +351,5 @@ class GACommand(p.toolkit.CkanCommand):
     def test_queries(self):
         last_month_end = datetime.datetime.today().replace(day=1) - datetime.timedelta(days=1)
         last_month_start = last_month_end.replace(day=1)
-        stats = PackageStats.get_total_visits(start_date=last_month_start, end_date=last_month_end, limit=20)
+        stats = PackageStats.get_total_visits(start_date=last_month_start, end_date=last_month_end, limit=100)
         print 'stats: %s' % stats
