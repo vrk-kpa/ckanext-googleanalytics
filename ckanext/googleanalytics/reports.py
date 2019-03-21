@@ -21,7 +21,7 @@ def google_analytics_dataset_report(time):
         
 
     # get package objects corresponding to popular GA content
-    top_packages = PackageStats.get_total_visits(start_date=start_date, end_date=end_date)
+    top_packages = PackageStats.get_total_visits(start_date=start_date, end_date=end_date, limit=100)
 
 
     return {

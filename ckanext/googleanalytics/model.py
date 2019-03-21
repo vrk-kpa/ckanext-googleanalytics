@@ -56,6 +56,10 @@ class PackageStats(Base):
 
     @classmethod
     def update_downloads(cls, package_id, visit_date, downloads):
+        '''
+        Add's downloads amount to package, by adding downloads together.
+        If package doesn't have any stats, adds stats object with empty visits and entrances
+        '''
         package = model.Session.query(cls).filter(cls.package_id == package_id).filter(cls.visit_date == visit_date).first()
         if package is None:
             cls.update_visits(item_id=package_id, visit_date=visit_date, visits=0, entrances=0, downloads=downloads)
@@ -444,6 +448,13 @@ class ResourceStats(Base):
         }
         return results
 
+    @classmethod
+    def get_latest_update_date(cls):
+        result = model.Session.query(cls).order_by(cls.visit_date.desc()).first()
+        if result is None:
+            return None
+        else:
+            return result.visit_date
 
 class AudienceLocation(Base):
     """
