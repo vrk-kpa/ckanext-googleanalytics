@@ -120,7 +120,7 @@ class PackageStats(Base):
         
         visits_by_dataset.sort(key=lambda x: x['visits'], reverse=True)
 
-        return visits_by_dataset
+        return visits_by_dataset[:limit]
 
     @classmethod
     def get_visits_during_year(cls, resource_id, year):
