@@ -67,7 +67,7 @@ class GACommand(p.toolkit.CkanCommand):
             self.init_service(self.args)
         elif cmd == 'loadanalytics':
             self.load_analytics(self.args)
-        # TODO: remove these
+        # Development commands
         elif cmd == 'test':
             self.test_queries()
         elif cmd == 'initloadtest':
@@ -415,4 +415,4 @@ class GACommand(p.toolkit.CkanCommand):
     def test_queries(self):
         last_month_end = datetime.datetime.today().replace(day=1) - datetime.timedelta(days=1)
         last_month_start = last_month_end.replace(day=1)
-        stats = PackageStats.get_total_visits(start_date=last_month_start, end_date=last_month_end, limit=100)
+        stats = PackageStats.get_total_visits(start_date=last_month_start, end_date=last_month_end, limit=100, desc=False)

@@ -724,7 +724,5 @@ def maybe_negate(value, inputvalue, negate=False):
 
 
 def init_tables(engine):
-    # TODO: remove the table drop
-    Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     log.info('Google analytics database tables are set-up')
