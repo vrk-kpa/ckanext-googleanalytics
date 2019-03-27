@@ -45,6 +45,48 @@ googleanalytics_dataset_report_info = {
     'template': 'report/dataset_analytics.html',
 }
 
+def google_analytics_dataset_least_popular_report(time):
+    '''
+    Generates report based on google analytics data. number of views per package
+    '''
+    
+    today = datetime.today()
+    if time == 'week':
+        start_date = today - timedelta(days=today.weekday(), weeks=1)
+        end_date = today - timedelta(days=today.weekday() + 1)
+    elif time == 'month':
+        end_date = today.replace(day=1) - timedelta(days=1)
+        start_date = end_date.replace(day=1)
+    elif time == 'year':
+        end_date = today - timedelta(days=1)
+        start_date = end_date - timedelta(days=365)
+        
+
+    # get package objects corresponding to popular GA content
+    top_packages = PackageStats.get_total_visits(start_date=start_date, end_date=end_date, limit=100, desc=False)
+
+
+    return {
+        'table': top_packages
+    }
+
+
+def google_analytics_dataset_least_popular_option_combinations():
+    options = ['week', 'month', 'year']
+    for option in options:
+        yield {'time': option}
+
+
+googleanalytics_dataset_least_popular_report_info = {
+    'name': 'google-analytics-dataset-least-popular',
+    'title': 'Least popular datasets',
+    'description': 'Google analytics showing top datasets with least views',
+    'option_defaults': OrderedDict((('time', 'month'),)),
+    'option_combinations': google_analytics_dataset_least_popular_option_combinations,
+    'generate': google_analytics_dataset_least_popular_report,
+    'template': 'report/dataset_analytics.html',
+}
+
 
 def google_analytics_resource_report(last):
     '''

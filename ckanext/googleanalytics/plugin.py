@@ -167,4 +167,4 @@ class GoogleAnalyticsPlugin(p.SingletonPlugin, DefaultTranslation):
         """Register details of an extension's reports"""
         import reports
         return [reports.googleanalytics_dataset_report_info, reports.googleanalytics_resource_report_info,
-                reports.googleanalytics_location_report_info]
+                reports.googleanalytics_location_report_info, reports.googleanalytics_dataset_least_popular_report_info]

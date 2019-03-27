@@ -95,7 +95,7 @@ class PackageStats(Base):
         return cls.convert_to_dict(package_visits, None)
 
     @classmethod
-    def get_total_visits(cls, start_date, end_date, limit = 50):
+    def get_total_visits(cls, start_date, end_date, limit = 50, desc=True):
         '''
         Returns datasets and their visitors amount summed during time span, grouped by dataset.
 
@@ -118,7 +118,7 @@ class PackageStats(Base):
                 unique_datasets.append(item['package_id'])
                 visits_by_dataset.append({ 'package_id': item['package_id'], 'visits': item['visits'], 'package_name': item['package_name'], 'entrances': item['entrances'], 'downloads': item['downloads']})
         
-        visits_by_dataset.sort(key=lambda x: x['visits'], reverse=True)
+        visits_by_dataset.sort(key=lambda x: x['visits'], reverse=desc)
 
         return visits_by_dataset[:limit]
 
