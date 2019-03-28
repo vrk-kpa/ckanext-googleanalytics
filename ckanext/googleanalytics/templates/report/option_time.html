@@ -6,7 +6,7 @@ default - Default value for this option
 #}
 
 <span class="form-select control-group control-organization">
-    <label for="option-time"> {{ _('Timespan for records:') }} </label>
+    <label for="option-time"> {{ _('Timespan for records') }} </label>
     <select id="option-time" name="time" class="inline js-auto-submit">
         {% for time in ['week', 'month', 'year'] %}
             <option value="{{time}}" {% if value == time %}selected="selected" {% endif %}> {{time}} </option>
