@@ -264,11 +264,11 @@ class GACommand(p.toolkit.CkanCommand):
         return dates
 
     def save_type_package(self, data):
-        for identifier, date_collection in data.items():
-            package_name = identifier
-            item = model.Package.by_name(package_name)
+        for package_id_or_name, date_collection in data.items():
+            # this is a lot slower than by_name()
+            item = model.Package.get(package_id_or_name)
             if not item:
-                self.log.warning("Couldn't find package %s" % package_name)
+                self.log.warning("Couldn't find package %s" % package_id_or_name)
                 continue
             
             for date, value in date_collection.iteritems():
@@ -285,11 +285,11 @@ class GACommand(p.toolkit.CkanCommand):
                 ResourceStats.update_visits(resource.id, date, value["downloads"])
 
     def save_type_package_downloads(self, data):
-        for package_name, date_collection in data.items():
-            package = model.Package.by_name(package_name)
+        for package_id_or_name, date_collection in data.items():
+            package = model.Package.get(package_id_or_name)
 
             if not package:
-                self.log.warning("Couldn't find package %s" % package_name)
+                self.log.warning("Couldn't find package %s" % package_id_or_name)
                 continue
             
             for date, value in date_collection.iteritems():
@@ -306,7 +306,7 @@ class GACommand(p.toolkit.CkanCommand):
         '''
         formats results and returns a dictionary like:
         {
-            'package_name': { 2019-02-24: { 'visits': 500,  'entrances': 400, 'downloads': 300 }},
+            'package_name_or_id': { 2019-02-24: { 'visits': 500,  'entrances': 400, 'downloads': 300 }},
         }
         '''
         if 'rows' in results:
@@ -315,22 +315,23 @@ class GACommand(p.toolkit.CkanCommand):
                 visit_date = datetime.datetime.strptime(result[1], "%Y%m%d").date()
                 
                 splitPath = path.split('/')
-                package = splitPath[splitPath.index('dataset') + 1]
+                path_with_vars = splitPath[splitPath.index('dataset') + 1]
+                package_id_or_name = path_with_vars.split('?')[0].split('&')[0]
 
                 visit_count = result[2]
                 entrance_count = result[3]
 
-                # add package if not already there
-                if package not in data:
-                    data.setdefault(package, {})
+                # add package_id_or_name if not already there
+                if package_id_or_name not in data:
+                    data.setdefault(package_id_or_name, {})
                 
-                if visit_date not in data[package]:
-                    data[package].setdefault(visit_date, {"visits": 0, "entrances": 0})
+                if visit_date not in data[package_id_or_name]:
+                    data[package_id_or_name].setdefault(visit_date, {"visits": 0, "entrances": 0})
                 
                 # Adds visits in different languages together
                 # TODO: check this. does this also add other that are not supposed? Same in downloads
-                data[package][visit_date]['visits'] += int(visit_count)
-                data[package][visit_date]['entrances'] += int(entrance_count)
+                data[package_id_or_name][visit_date]['visits'] += int(visit_count)
+                data[package_id_or_name][visit_date]['entrances'] += int(entrance_count)
 
         return data
 
@@ -377,7 +378,8 @@ class GACommand(p.toolkit.CkanCommand):
                 downloads = result[3]
 
                 splitPath = path.split('/')
-                package_name = splitPath[splitPath.index('dataset') + 1]
+                path_with_vars = splitPath[splitPath.index('dataset') + 1]
+                package_name = path_with_vars.split('?')[0].split('&')[0]
 
                 # add package if not already there
                 if package_name not in data:
@@ -415,4 +417,5 @@ class GACommand(p.toolkit.CkanCommand):
     def test_queries(self):
         last_month_end = datetime.datetime.today().replace(day=1) - datetime.timedelta(days=1)
         last_month_start = last_month_end.replace(day=1)
-        stats = PackageStats.get_total_visits(start_date=last_month_start, end_date=last_month_end, limit=100, desc=False)
+        stats = PackageStats.get_total_visits(start_date=last_month_start, end_date=last_month_end, limit=100, desc=False)[:1]
+        print stats
