@@ -119,8 +119,10 @@ class PackageStats(Base):
                 visits_by_dataset.append({ 'package_id': item['package_id'], 'visits': item['visits'], 'package_name': item['package_name'], 'entrances': item['entrances'], 'downloads': item['downloads']})
         
         visits_by_dataset.sort(key=lambda x: x['visits'], reverse=desc)
-
-        return visits_by_dataset[:limit]
+        if limit > 0:
+            return visits_by_dataset[:limit]
+        else:
+            return visits_by_dataset
 
     @classmethod
     def get_visits_during_year(cls, resource_id, year):
