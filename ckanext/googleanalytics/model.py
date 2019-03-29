@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from sqlalchemy import types, func, Column, ForeignKey, not_
+from sqlalchemy import types, func, Column, ForeignKey, not_, desc
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -45,10 +45,11 @@ class PackageStats(Base):
         if package is None:
             package = PackageStats(package_id=item_id, visit_date=visit_date, visits=visits, entrances=entrances, downloads=downloads)
             model.Session.add(package)
-        elif visits != 0:
-            package.visits = visits
-        elif entrances != 0:
-            package.entrances = entrances
+        else:
+            if visits != 0:
+                package.visits = visits
+            if entrances != 0:
+                package.entrances = entrances
 
         log.debug("Number of visits for date: %s updated for package id: %s", visit_date, item_id)
         model.Session.flush()
@@ -73,11 +74,11 @@ class PackageStats(Base):
     @classmethod
     def get_package_name_by_id(cls, package_id):
         package = model.Session.query(model.Package).filter(model.Package.id == package_id).first()
-        pack_name = []
+        pack_name = ""
         if package is not None:
             pack_name = package.title or package.name
         return pack_name
-
+            
     @classmethod
     def get_visits(cls, start_date, end_date):
         '''
@@ -95,7 +96,7 @@ class PackageStats(Base):
         return cls.convert_to_dict(package_visits, None)
 
     @classmethod
-    def get_total_visits(cls, start_date, end_date, limit = 50, desc=True):
+    def get_total_visits(cls, start_date, end_date, limit = 50, descending=True):
         '''
         Returns datasets and their visitors amount summed during time span, grouped by dataset.
 
@@ -103,26 +104,36 @@ class PackageStats(Base):
         :param end_date: Date
         :return: [{ visits, entrances, package_id, package_name }, ...]
         '''
-        visits_by_date = cls.get_visits(start_date, end_date)['packages']
-
-        unique_datasets = []
-        visits_by_dataset = []
-        for item in visits_by_date:
-            if item['package_id'] in unique_datasets:
-                for dataset in visits_by_dataset:
-                    if dataset['package_id'] == item['package_id']:
-                        dataset['visits'] += item['visits']
-                        dataset['entrances'] += item['entrances']
-                        dataset['downloads'] += item['downloads']
+        def sorting_direction(value, descending):
+            if descending:
+                return desc(value)
             else:
-                unique_datasets.append(item['package_id'])
-                visits_by_dataset.append({ 'package_id': item['package_id'], 'visits': item['visits'], 'package_name': item['package_name'], 'entrances': item['entrances'], 'downloads': item['downloads']})
-        
-        visits_by_dataset.sort(key=lambda x: x['visits'], reverse=desc)
-        if limit > 0:
-            return visits_by_dataset[:limit]
-        else:
-            return visits_by_dataset
+                return value
+            
+        visits_by_dataset = model.Session.query(
+                cls.package_id,
+                func.sum(cls.visits).label('total_visits'),
+                func.sum(cls.downloads).label('total_downloads'),
+                func.sum(cls.entrances).label('total_entrances')
+            ) \
+            .filter(cls.visit_date >= start_date) \
+            .filter(cls.visit_date <= end_date) \
+            .group_by(cls.package_id) \
+            .order_by(sorting_direction(func.sum(cls.visits), descending)) \
+            .limit(limit) \
+            .all()
+
+        datasets = []
+        for dataset in visits_by_dataset:
+            datasets.append({
+                "package_name": PackageStats.get_package_name_by_id(dataset.package_id),
+                "package_id": dataset.package_id,
+                "visits": dataset.total_visits,
+                "entrances": dataset.total_entrances,
+                "downloads": dataset.total_downloads,
+            })
+    
+        return datasets
 
     @classmethod
     def get_visits_during_year(cls, resource_id, year):

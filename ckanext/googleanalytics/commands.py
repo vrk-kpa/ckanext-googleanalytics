@@ -329,7 +329,6 @@ class GACommand(p.toolkit.CkanCommand):
                     data[package_id_or_name].setdefault(visit_date, {"visits": 0, "entrances": 0})
                 
                 # Adds visits in different languages together
-                # TODO: check this. does this also add other that are not supposed? Same in downloads
                 data[package_id_or_name][visit_date]['visits'] += int(visit_count)
                 data[package_id_or_name][visit_date]['entrances'] += int(entrance_count)
 
@@ -417,5 +416,7 @@ class GACommand(p.toolkit.CkanCommand):
     def test_queries(self):
         last_month_end = datetime.datetime.today().replace(day=1) - datetime.timedelta(days=1)
         last_month_start = last_month_end.replace(day=1)
-        stats = PackageStats.get_total_visits(start_date=last_month_start, end_date=last_month_end, limit=100, desc=False)[:1]
-        print stats
+        stats = PackageStats.get_total_visits(last_month_start, last_month_end, limit=20)
+        for stat in stats:
+            print (stat['entrances'], stat['package_name'], stat['visits'])
+        
