@@ -1,28 +1,27 @@
-# Finnish translations for ckanext-googleanalytics.
+# Translations template for ckanext-googleanalytics.
 # Copyright (C) 2019 ORGANIZATION
-# This file is distributed under the same license as the
-# ckanext-googleanalytics
+# This file is distributed under the same license as the ckanext-googleanalytics
 # project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
-#
+# 
 # Translators:
 # Aaron Hakala <aaron.hakala@gofore.com>, 2019
+# 
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: ckanext-googleanalytics 0.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-03-12 13:42+0200\n"
+"POT-Creation-Date: 2019-03-28 15:15+0000\n"
 "PO-Revision-Date: 2019-03-12 11:48+0000\n"
 "Last-Translator: Aaron Hakala <aaron.hakala@gofore.com>, 2019\n"
-"Language: fi\n"
-"Language-Team: Finnish "
-"(https://www.transifex.com/avoindata/teams/7979/fi/)\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"Language-Team: Finnish (https://www.transifex.com/avoindata/teams/7979/fi/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.3.4\n"
+"Language: fi\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: ckanext/googleanalytics/templates/report/analytics.html:2
 #: ckanext/googleanalytics/templates/report/dataset_analytics.html:2
@@ -36,17 +35,16 @@ msgstr "Tietoaineisto"
 
 #: ckanext/googleanalytics/templates/report/analytics.html:7
 msgid "Last accessed day"
-msgstr ""
+msgstr "Viimeksi vierailtu päivä"
 
 #: ckanext/googleanalytics/templates/report/analytics.html:8
-#: ckanext/googleanalytics/templates/report/dataset_analytics.html:8
 msgid "Number views (since recording started)"
 msgstr "Vierailu kertoja (seurannan alusta alkaen)"
 
 #: ckanext/googleanalytics/templates/report/analytics.html:19
-#: ckanext/googleanalytics/templates/report/dataset_analytics.html:19
+#: ckanext/googleanalytics/templates/report/dataset_analytics.html:35
 msgid "No analytics found for most downloaded datasets."
-msgstr ""
+msgstr "Ei analytiikkaa eniten ladatuista tietoaineistoista."
 
 #: ckanext/googleanalytics/templates/report/analytics.html:21
 #: ckanext/googleanalytics/templates/report/resource_analytics.html:2
@@ -73,36 +71,66 @@ msgid "No statistics found for most downloaded resources."
 msgstr "Statistiikkaa ei löytynyt eniten ladatuista aineistolinkeistä."
 
 #: ckanext/googleanalytics/templates/report/dataset_analytics.html:7
-#: ckanext/googleanalytics/templates/report/resource_analytics.html:7
-msgid "Last accessed date"
-msgstr ""
+msgid "Total views"
+msgstr "Katsomiskertoja yhteensä"
 
-#: ckanext/googleanalytics/templates/report/location_analytics.html:28
+#: ckanext/googleanalytics/templates/report/dataset_analytics.html:8
+msgid "Initial entrance"
+msgstr "Linkin kautta tuloja"
+
+#: ckanext/googleanalytics/templates/report/dataset_analytics.html:9
+msgid "Entrances of total views"
+msgstr "Linkillä saapuvien osuus"
+
+#: ckanext/googleanalytics/templates/report/dataset_analytics.html:10
+msgid "Downloads"
+msgstr "Latauksia"
+
 #: ckanext/googleanalytics/templates/report/location_analytics.html:37
-msgid "Sessions past month"
+msgid "Sessions by month"
+msgstr "Sessioita kuukausittain"
+
+#: ckanext/googleanalytics/templates/report/location_analytics.html:38
+msgid "Dates"
+msgstr "Päivät"
+
+#: ckanext/googleanalytics/templates/report/location_analytics.html:39
+msgid "Sessions"
+msgstr "Sessioita"
+
+#: ckanext/googleanalytics/templates/report/location_analytics.html:47
+#: ckanext/googleanalytics/templates/report/location_analytics.html:56
+msgid "Sessions last month"
 msgstr "Sessioita viime kuussa"
 
-#: ckanext/googleanalytics/templates/report/location_analytics.html:44
+#: ckanext/googleanalytics/templates/report/location_analytics.html:63
 msgid "Sessions total"
 msgstr "Sessioita yhteensä"
 
-#: ckanext/googleanalytics/templates/report/location_analytics.html:52
+#: ckanext/googleanalytics/templates/report/location_analytics.html:71
 msgid "Audience locations"
 msgstr "Vierailijoiden sijainnit"
 
-#: ckanext/googleanalytics/templates/report/location_analytics.html:57
+#: ckanext/googleanalytics/templates/report/location_analytics.html:75
 msgid "Countries"
 msgstr "Maat"
 
-#: ckanext/googleanalytics/templates/report/location_analytics.html:58
+#: ckanext/googleanalytics/templates/report/location_analytics.html:76
 msgid "Sessions (since recording started)"
 msgstr "Sessioita (seurannan alusta alkaen)"
 
-#: ckanext/googleanalytics/templates/report/location_analytics.html:69
+#: ckanext/googleanalytics/templates/report/location_analytics.html:86
 msgid "No statistics found for audience locations."
 msgstr "Statistiikkaa ei löytynyt vierailijoiden sijainneista."
 
 #: ckanext/googleanalytics/templates/report/option_last.html:9
 msgid "Records to be shown:"
-msgstr ""
+msgstr "Näytettävän datan määrä"
 
+#: ckanext/googleanalytics/templates/report/option_time.html:9
+msgid "Timespan for records"
+msgstr "Datan aikaväli"
+
+#: ckanext/googleanalytics/templates/report/resource_analytics.html:7
+msgid "Last accessed date"
+msgstr "Viimeksi vierailtu päivä"
