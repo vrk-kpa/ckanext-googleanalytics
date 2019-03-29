@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from sqlalchemy import types, func, Column, ForeignKey, not_
+from sqlalchemy import types, func, Column, ForeignKey, not_, desc
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -22,40 +22,118 @@ class PackageStats(Base):
     package_id = Column(types.UnicodeText, nullable=False, index=True, primary_key=True)
     visit_date = Column(types.DateTime, default=datetime.now, primary_key=True)
     visits = Column(types.Integer)
+    entrances = Column(types.Integer)
+    downloads = Column(types.Integer)
 
     @classmethod
     def get(cls, id):
         return model.Session.query(cls).filter(cls.package_id == id).first()
 
     @classmethod
-    def update_visits(cls, item_id, visit_date, visits):
+    def update_visits(cls, item_id, visit_date, visits=0, entrances=0, downloads=0):
         '''
         Updates the number of visits for a certain package_id
         or creates a new one if it is the first visit for a certain date
 
         :param item_id: package_id
         :param visit_date: visit date to be updated
-        :param visits: number of visits until visit_date
+        :param visits: number of visits during date
+        :param entrances: number of entrances during date
         :return: True for a successful update, otherwise False
         '''
         package = model.Session.query(cls).filter(cls.package_id == item_id).filter(cls.visit_date == visit_date).first()
         if package is None:
-            package = PackageStats(package_id=item_id, visit_date=visit_date, visits=visits)
+            package = PackageStats(package_id=item_id, visit_date=visit_date, visits=visits, entrances=entrances, downloads=downloads)
             model.Session.add(package)
         else:
-            package.visits = visits
+            if visits != 0:
+                package.visits = visits
+            if entrances != 0:
+                package.entrances = entrances
 
         log.debug("Number of visits for date: %s updated for package id: %s", visit_date, item_id)
         model.Session.flush()
         return True
 
     @classmethod
+    def update_downloads(cls, package_id, visit_date, downloads):
+        '''
+        Add's downloads amount to package, by adding downloads together.
+        If package doesn't have any stats, adds stats object with empty visits and entrances
+        '''
+        package = model.Session.query(cls).filter(cls.package_id == package_id).filter(cls.visit_date == visit_date).first()
+        if package is None:
+            cls.update_visits(item_id=package_id, visit_date=visit_date, visits=0, entrances=0, downloads=downloads)
+        else:
+            package.downloads += downloads
+        
+        log.debug("Downloads updated for date: %s and packag: %s", visit_date, package_id)
+        model.Session.flush()
+        return True
+
+    @classmethod
     def get_package_name_by_id(cls, package_id):
         package = model.Session.query(model.Package).filter(model.Package.id == package_id).first()
-        pack_name = []
+        pack_name = ""
         if package is not None:
-            pack_name = package.name
+            pack_name = package.title or package.name
         return pack_name
+            
+    @classmethod
+    def get_visits(cls, start_date, end_date):
+        '''
+        Returns datasets and their visitors amount during time span, grouped by dates.
+
+        :param start_date: Date
+        :param end_date: Date
+        :return: [{ visits, package_id, package_name, visit_date }, ...]
+        '''
+        package_visits = model.Session.query(cls) \
+            .filter(cls.visit_date >= start_date) \
+            .filter(cls.visit_date <= end_date) \
+            .all()
+
+        return cls.convert_to_dict(package_visits, None)
+
+    @classmethod
+    def get_total_visits(cls, start_date, end_date, limit = 50, descending=True):
+        '''
+        Returns datasets and their visitors amount summed during time span, grouped by dataset.
+
+        :param start_date: Date
+        :param end_date: Date
+        :return: [{ visits, entrances, package_id, package_name }, ...]
+        '''
+        def sorting_direction(value, descending):
+            if descending:
+                return desc(value)
+            else:
+                return value
+            
+        visits_by_dataset = model.Session.query(
+                cls.package_id,
+                func.sum(cls.visits).label('total_visits'),
+                func.sum(cls.downloads).label('total_downloads'),
+                func.sum(cls.entrances).label('total_entrances')
+            ) \
+            .filter(cls.visit_date >= start_date) \
+            .filter(cls.visit_date <= end_date) \
+            .group_by(cls.package_id) \
+            .order_by(sorting_direction(func.sum(cls.visits), descending)) \
+            .limit(limit) \
+            .all()
+
+        datasets = []
+        for dataset in visits_by_dataset:
+            datasets.append({
+                "package_name": PackageStats.get_package_name_by_id(dataset.package_id),
+                "package_id": dataset.package_id,
+                "visits": dataset.total_visits,
+                "entrances": dataset.total_entrances,
+                "downloads": dataset.total_downloads,
+            })
+    
+        return datasets
 
     @classmethod
     def get_visits_during_year(cls, resource_id, year):
@@ -95,7 +173,7 @@ class PackageStats(Base):
     def get_top(cls, limit=20):
         package_stats = []
         # TODO: Reimplement in more efficient manner if needed (using RANK OVER and PARTITION in raw sql)
-        unique_packages = model.Session.query(cls.package_id, func.count(cls.visits)).group_by(cls.package_id).order_by(
+        unique_packages = model.Session.query(cls.package_id, func.count(cls.visits), func.count(cls.entrances), func.count(cls.downloads)).group_by(cls.package_id).order_by(
             func.count(cls.visits).desc()).limit(limit).all()
         # Adding last date associated to this package stat and filtering out private and deleted packages
         if unique_packages is not None:
@@ -110,7 +188,7 @@ class PackageStats(Base):
 
                 last_date = model.Session.query(func.max(cls.visit_date)).filter(cls.package_id == package_id).first()
 
-                ps = PackageStats(package_id=package_id, visit_date=last_date[0], visits=visits)
+                ps = PackageStats(package_id=package_id, visit_date=last_date[0], visits=visits, entrances=package[2], downloads=package[3])
                 package_stats.append(ps)
         dictat = PackageStats.convert_to_dict(package_stats, None)
         return dictat
@@ -171,6 +249,8 @@ class PackageStats(Base):
         result['package_name'] = package_name
         result['package_id'] = res.package_id
         result['visits'] = res.visits
+        result['entrances'] = res.entrances
+        result['downloads'] = res.downloads
         result['visit_date'] = res.visit_date.strftime("%d-%m-%Y")
         return result
 
@@ -381,6 +461,13 @@ class ResourceStats(Base):
         }
         return results
 
+    @classmethod
+    def get_latest_update_date(cls):
+        result = model.Session.query(cls).order_by(cls.visit_date.desc()).first()
+        if result is None:
+            return None
+        else:
+            return result.visit_date
 
 class AudienceLocation(Base):
     """

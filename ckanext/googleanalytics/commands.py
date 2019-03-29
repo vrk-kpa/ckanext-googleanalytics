@@ -67,7 +67,12 @@ class GACommand(p.toolkit.CkanCommand):
             self.init_service(self.args)
         elif cmd == 'loadanalytics':
             self.load_analytics(self.args)
+        # Development commands
         elif cmd == 'test':
+            self.test_queries()
+        elif cmd == 'initloadtest':
+            self.init_db()
+            self.load_analytics(self.args)
             self.test_queries()
         else:
             self.log.error('Command "%s" not recognized' % (cmd,))
@@ -173,20 +178,38 @@ class GACommand(p.toolkit.CkanCommand):
             'type': 'package',
             'dates': self.get_dates_between_update(given_start_date, PackageStats.get_latest_update_date()),
             'filters': 'ga:pagePath=~%s,ga:pagePath=~%s' % (PACKAGE_URL, self.resource_url_tag),
-            'metrics': 'ga:uniquePageviews',
-            'sort': '-ga:uniquePageviews',
+            'metrics': 'ga:uniquePageviews, ga:entrances',
+            'sort': 'ga:date',
             'dimensions': 'ga:pagePath, ga:date',
             'resolver': self.resolver_type_package,
             'save': self.save_type_package,
+        }, {
+            'type': 'resource',
+            'dates': self.get_dates_between_update(given_start_date, ResourceStats.get_latest_update_date()),
+            'filters': 'ga:pagePath=~%s' % self.resource_url_tag,
+            'metrics': 'ga:uniquePageviews',
+            'sort': 'ga:date',
+            'dimensions': 'ga:pagePath, ga:date',
+            'resolver': self.resolver_type_resource,
+            'save': self.save_type_resource,
         }, {
             'type': 'visitorlocation',
             'dates': self.get_dates_between_update(given_start_date, AudienceLocationDate.get_latest_update_date()),
             'filters': ";".join(botFilters),
             'metrics': 'ga:sessions',
-            'sort': '-ga:sessions',
+            'sort': 'ga:date',
             'dimensions': 'ga:country, ga:date',
             'resolver': self.resolver_type_visitorlocation,
             'save': self.save_type_visitorlocation,
+        }, {
+            'type': 'package_downloads',
+            'dates': self.get_dates_between_update(given_start_date, PackageStats.get_latest_update_date()),
+            'filters': "ga:eventCategory==Resource;ga:eventAction==Download",
+            'metrics': "ga:uniqueEvents",
+            'sort': "ga:date",
+            'dimensions': "ga:pagePath, ga:date, ga:eventCategory",
+            'resolver': self.resolver_type_package_downloads,
+            'save': self.save_type_package_downloads,
         }]
 
         # loop through queries, parse and save them to db
@@ -194,6 +217,7 @@ class GACommand(p.toolkit.CkanCommand):
             data = {}
             current = datetime.datetime.now()
             self.log.info('performing analytics query of type: %s' % query['type'])
+            print 'Querying type: %s' % query['type']
             for date in query['dates']:
                 # run query with current query values
                 results = self.ga_query(start_date=date,
@@ -202,15 +226,16 @@ class GACommand(p.toolkit.CkanCommand):
                                         metrics=query['metrics'],
                                         sort=query['sort'],
                                         dimensions=query['dimensions'])
-
                 # parse query
                 resolver = query['resolver']
-                data = resolver(query['type'], results, data)
+                data = resolver(results, data)
                 current = date
 
             save_function = query['save']
-            save_function(query['type'], data)
+            print 'Saving type: %s' % query['type']
+            save_function(data)
             model.Session.commit()
+            print 'Saving done'
             self.log.info("Successfully saved analytics query of type: %s" % query['type'])
 
     def get_dates_between_update(self, start_date, latest_date=None):
@@ -238,83 +263,141 @@ class GACommand(p.toolkit.CkanCommand):
 
         return dates
 
-    def save_type_package(self, querytype, data):
-        for identifier, visits_collection in data[querytype].items():
-            visits = visits_collection.get('visits', {})
-            matches = RESOURCE_URL_REGEX.match(identifier)
-            if matches:
-                resource_url = identifier[len(self.resource_url_tag):]
-                resource = model.Session.query(model.Resource).autoflush(True) \
-                    .filter_by(id=matches.group(1)).first()
-                if not resource:
-                    self.log.warning("Couldn't find resource %s" % resource_url)
-                    continue
-                for visit_date, count in visits.iteritems():
-                    ResourceStats.update_visits(resource.id, visit_date, count)
-                    self.log.info("Updated %s with %s visits" % (resource.id, count))
-            else:
-                package_name = identifier[len(PACKAGE_URL):]
-                if "/" in package_name:
-                    self.log.warning("%s not a valid package name" % package_name)
-                    continue
-                item = model.Package.by_name(package_name)
-                if not item:
-                    self.log.warning("Couldn't find package %s" % package_name)
-                    continue
-                for visit_date, count in visits.iteritems():
-                    PackageStats.update_visits(item.id, visit_date, count)
-                    self.log.info("Updated %s with %s visits" % (item.id, count))
+    def save_type_package(self, data):
+        for package_id_or_name, date_collection in data.items():
+            # this is a lot slower than by_name()
+            item = model.Package.get(package_id_or_name)
+            if not item:
+                self.log.warning("Couldn't find package %s" % package_id_or_name)
+                continue
+            
+            for date, value in date_collection.iteritems():
+                PackageStats.update_visits(item.id, date, value["visits"], value["entrances"])
 
-    def save_type_visitorlocation(self, querytype, data):
-        for location, visits_collection in data[querytype].items():
+    def save_type_resource(self, data):
+        for identifier, date_collection in data.items():
+            resource_id = identifier
+            resource = model.Session.query(model.Resource).autoflush(True).filter_by(id=resource_id).first()
+            if not resource:
+                self.log.warning("Couldn't find resource %s" % resource_id)
+                continue
+            for date, value in date_collection.iteritems():
+                ResourceStats.update_visits(resource.id, date, value["downloads"])
+
+    def save_type_package_downloads(self, data):
+        for package_id_or_name, date_collection in data.items():
+            package = model.Package.get(package_id_or_name)
+
+            if not package:
+                self.log.warning("Couldn't find package %s" % package_id_or_name)
+                continue
+            
+            for date, value in date_collection.iteritems():
+                PackageStats.update_downloads(package_id=package.id, visit_date=date, downloads=value["downloads"])
+
+    def save_type_visitorlocation(self, data):
+        for location, visits_collection in data.items():
             visits = visits_collection.get('visits', {})
             for visit_date, count in visits.iteritems():
                 AudienceLocationDate.update_visits(location, visit_date, count)
                 self.log.info("Updated %s on %s with %s visits" % (location, visit_date, count))
 
-    def resolver_type_package(self, querytype, results, data):
+    def resolver_type_package(self, results, data):
         '''
         formats results and returns a dictionary like:
         {
-            'package': { 'cool-dataset-name': { 'visits': { 2019-02-24: 500, ... } }, ... },
+            'package_name_or_id': { 2019-02-24: { 'visits': 500,  'entrances': 400, 'downloads': 300 }},
         }
         '''
         if 'rows' in results:
             for result in results.get('rows'):
-                # this is still specific for packages query
-                package = result[0]
-                # removes /data/ from the url
-                if package.startswith('/data/'):
-                    package = package[len('/data'):]
-
-                # if package contains a language it is removed
-                # the visit count for a dataset is all visits to different languages added together
-                if package.startswith('/fi/') or package.startswith('/sv/') or package.startswith('/en/'):
-                    package = package[len('/fi'):]
-
+                path = result[0]
                 visit_date = datetime.datetime.strptime(result[1], "%Y%m%d").date()
-                count = result[2]
-                # Make sure we add the different representations of the same
-                # dataset /mysite.com & /www.mysite.com ...
+                
+                splitPath = path.split('/')
+                path_with_vars = splitPath[splitPath.index('dataset') + 1]
+                package_id_or_name = path_with_vars.split('?')[0].split('&')[0]
 
-                val = 0
-                # add querytype if not already there
-                if querytype not in data:
-                    data.setdefault(querytype, {})
+                visit_count = result[2]
+                entrance_count = result[3]
+
+                # add package_id_or_name if not already there
+                if package_id_or_name not in data:
+                    data.setdefault(package_id_or_name, {})
+                
+                if visit_date not in data[package_id_or_name]:
+                    data[package_id_or_name].setdefault(visit_date, {"visits": 0, "entrances": 0})
+                
                 # Adds visits in different languages together
-                if package in data[querytype] and "visits" in data[querytype][package]:
-                    if visit_date in data[querytype][package]['visits']:
-                        val += data[querytype][package]["visits"][visit_date]
-                else:
-                    data[querytype].setdefault(package, {})["visits"] = {}
-                data[querytype][package]['visits'][visit_date] = int(count) + val
+                data[package_id_or_name][visit_date]['visits'] += int(visit_count)
+                data[package_id_or_name][visit_date]['entrances'] += int(entrance_count)
+
         return data
 
-    def resolver_type_visitorlocation(self, querytype, results, data):
+    def resolver_type_resource(self, results, data):
         '''
         formats results and returns a dictionary like:
         {
-            'visitorlocation': { 'Finland': { 'visits': { 2019-02-24: 500, ... } }, ... }
+            'resource_id': { 2019-02-24: { 'downloads': 500 }},
+        }
+        '''
+        if 'rows' in results:
+            for result in results.get('rows'):
+                path = result[0]
+                visit_date = datetime.datetime.strptime(result[1], "%Y%m%d").date()
+                
+                splitPath = path.split('/')
+                resource_id = splitPath[splitPath.index('resource') + 1]
+
+                download_count = result[2]
+
+                # add resource_id if not already there
+                if resource_id not in data:
+                    data.setdefault(resource_id, {})
+                
+                if visit_date not in data[resource_id]:
+                    data[resource_id].setdefault(visit_date, { "downloads": 0 })
+                
+                # Adds downloads in different languages together
+                data[resource_id][visit_date]['downloads'] += int(download_count)
+
+        return data
+
+    def resolver_type_package_downloads(self, results, data):
+        '''
+        formats results and returns a dictionary like:
+        {
+            'package_name': { '2019-02-24': { 'downloads': 500 }, ...}, ...
+        }
+        '''
+        if 'rows' in results:
+            for result in results.get('rows'):
+                path = result[0]
+                visit_date = datetime.datetime.strptime(result[1], "%Y%m%d").date()
+                downloads = result[3]
+
+                splitPath = path.split('/')
+                path_with_vars = splitPath[splitPath.index('dataset') + 1]
+                package_name = path_with_vars.split('?')[0].split('&')[0]
+
+                # add package if not already there
+                if package_name not in data:
+                    data.setdefault(package_name, {})
+                
+                # add visit_date if not already there
+                if visit_date not in data[package_name]:
+                    data[package_name].setdefault(visit_date, {"downloads": 0})
+                
+                # Set total downloads to 
+                data[package_name][visit_date]['downloads'] += int(downloads)
+        
+        return data
+                    
+    def resolver_type_visitorlocation(self, results, data):
+        '''
+        formats results and returns a dictionary like:
+        {
+            'Finland': { 'visits': { 2019-02-24: 500, ... } }
         }
         '''
         if 'rows' in results:
@@ -324,13 +407,16 @@ class GACommand(p.toolkit.CkanCommand):
                 count = result[2]
 
                 visit_date = datetime.datetime.strptime(date, "%Y%m%d").date()
-                # add querytype if not already in data
-                if querytype not in data:
-                    data.setdefault(querytype, {})
-                if location not in data[querytype]:
-                    data[querytype].setdefault(location, {})["visits"] = {}
-                data[querytype][location]['visits'][visit_date] = int(count)
+                # add location if not already in data
+                if location not in data:
+                    data.setdefault(location, {})["visits"] = {}
+                data[location]['visits'][visit_date] = int(count)
         return data
 
     def test_queries(self):
-        AudienceLocationDate.special_total_by_months()
+        last_month_end = datetime.datetime.today().replace(day=1) - datetime.timedelta(days=1)
+        last_month_start = last_month_end.replace(day=1)
+        stats = PackageStats.get_total_visits(last_month_start, last_month_end, limit=20)
+        for stat in stats:
+            print (stat['entrances'], stat['package_name'], stat['visits'])
+        
