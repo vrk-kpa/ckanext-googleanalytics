@@ -283,45 +283,40 @@ class PackageStats(Base):
         response = requests.get(url)
         return response.json()['result']['organization']['name']
 
-    @classmethod
-    def organization_dataset_visits_as_dict(cls, res):
-        result = {}
-        res_info = ResourceStats.get_resource_info_by_id(res.resource_id)
-        result['resource_name'] = res_info[0]
-        result['resource_id'] = res.resource_id
-        return result
 
     @classmethod
-    def get_organizations_with_most_popular_datasets(cls, time=None):
-        end_date = datetime.now().date()
-        num_days = 0
-        if time == "week":
-            num_days = 7
-        elif time == "month":
-            num_days = 30
-        elif time == "year":
-            num_days = 365
-        start_date = end_date - timedelta(num_days)
-        all_packages_result = cls.get_total_visits(start_date, end_date, limit = 5)
-        organization_visit_counts = {}  # Map organization name to total visit count
+    def get_organizations_with_most_popular_datasets(cls, start_date, end_date, limit=20):
+        all_packages_result = cls.get_total_visits(start_date, end_date, limit=None)
+        organization_stats = {}  # Map organization name to total visit count
         for package in all_packages_result:
-            print(str(package))
-            id = package["package_id"]
+            package_id = package["package_id"]
             visits = package["visits"]
+            downloads = package["downloads"]
+            entrances = package["entrances"]
 
+            organization_name = cls.get_organization(package_id)
+            if(organization_name in organization_stats):
+                organization_stats[organization_name]["visits"] += visits
+                organization_stats[organization_name]["downloads"] += downloads
+                organization_stats[organization_name]["entrances"] += entrances
+            else:
+                organization_stats[organization_name] = {
+                    "visits": visits,
+                    "downloads": downloads,
+                    "entrances": entrances
+                }
 
-            organization_name = cls.get_organization(id)
-            print(id, organization_name, visits)
-            organization_visit_counts[organization_name] = organization_visit_counts.get(organization_name, 0) + visits
-        
         organization_list = []
-        for organization_name, visit_count in organization_visit_counts.iteritems():
+        for organization_name, stats in organization_stats.iteritems():
             organization_list.append(
-                {"organization_name": organization_name, "total_visits": visit_count}
+                {"organization_name": organization_name,
+                 "total_visits": stats["visits"],
+                 "total_downloads": stats["downloads"],
+                 "total_entrances": stats["entrances"]
+                }
             )
 
-        print("Organization visit counts" + str(organization_visit_counts))
-        return organization_list
+        return sorted(organization_list, key=lambda organization: organization["total_visits"], reverse=True)[:limit]
 
 
 class ResourceStats(Base):
