@@ -157,3 +157,21 @@ googleanalytics_location_report_info = {
     'generate': google_analytics_location_report,
     'template': 'report/location_analytics.html'
 }
+
+
+def google_analytics_organizations_with_most_popular_datasets(time):
+    most_popular_organizations = PackageStats.get_organizations_with_most_popular_datasets(time)
+    return {
+        'table': most_popular_organizations
+    }
+
+
+googleanalytics_organizations_with_most_popular_datasets_info = {
+    'name': 'google-analytics-most-popular-organizations',
+    'title': 'Most popular organizations',
+    'description': 'Google analytics showing most popular organizations by visited datasets',
+    'option_defaults': OrderedDict((('time', 'month'),)),
+    'option_combinations': google_analytics_dataset_option_combinations,
+    'generate': google_analytics_organizations_with_most_popular_datasets,
+    'template': 'report/organization_analytics.html'
+}

@@ -5,6 +5,8 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 
 import ckan.model as model
+import requests
+from pylons import config
 
 log = __import__('logging').getLogger(__name__)
 
@@ -262,6 +264,52 @@ class PackageStats(Base):
         else:
             return result.visit_date
 
+    @classmethod
+    def get_organization(cls, dataset_name):
+        url = config.get("ckan.site_url") + "/data/api/3/action/package_show?id=" + dataset_name
+        response = requests.get(url)
+        return response.json()['result']['organization']['name']
+
+    @classmethod
+    def organization_dataset_visits_as_dict(cls, res):
+        result = {}
+        res_info = ResourceStats.get_resource_info_by_id(res.resource_id)
+        result['resource_name'] = res_info[0]
+        result['resource_id'] = res.resource_id
+        return result
+
+    @classmethod
+    def get_organizations_with_most_popular_datasets(cls, time=None):
+        end_date = datetime.now().date()
+        num_days = 0
+        if time == "week":
+            num_days = 7
+        elif time == "month":
+            num_days = 30
+        elif time == "year":
+            num_days = 365
+        start_date = end_date - timedelta(num_days)
+        all_packages_result = cls.get_total_visits(start_date, end_date, limit = 5)
+        organization_visit_counts = {}  # Map organization name to total visit count
+        for package in all_packages_result:
+            print(str(package))
+            id = package["package_id"]
+            visits = package["visits"]
+
+
+            organization_name = cls.get_organization(id)
+            print(id, organization_name, visits)
+            organization_visit_counts[organization_name] = organization_visit_counts.get(organization_name, 0) + visits
+        
+        organization_list = []
+        for organization_name, visit_count in organization_visit_counts.iteritems():
+            organization_list.append(
+                {"organization_name": organization_name, "total_visits": visit_count}
+            )
+
+        print("Organization visit counts" + str(organization_visit_counts))
+        return organization_list
+
 
 class ResourceStats(Base):
     """
@@ -465,7 +513,7 @@ class AudienceLocation(Base):
 
     id = Column(types.Integer, primary_key=True, autoincrement=True, unique=True)
     location_name = Column(types.UnicodeText, nullable=False, primary_key=True)
-
+    
     visits_by_date = relationship("AudienceLocationDate", back_populates="location")
 
     @classmethod
@@ -724,5 +772,6 @@ def maybe_negate(value, inputvalue, negate=False):
 
 
 def init_tables(engine):
+    Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
     log.info('Google analytics database tables are set-up')
