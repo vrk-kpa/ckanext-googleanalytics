@@ -1,5 +1,5 @@
 {% set percent = 0 %}
-{% if toppackage.visits != 0 %}{% set percent = ((toppackage.total_entrances / toppackage.total_visits) * 100)|round(1, 'floor') %}{% endif %}
+{% if total_visits != 0 %}{% set percent = ((total_entrances / total_visits) * 100)|round(1, 'floor') %}{% endif %}
 {% set percent_class = 'color_danger' %}
 {% if percent > 25 %}
   {% set percent_class = 'color_warning' %}
