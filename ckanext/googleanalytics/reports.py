@@ -3,22 +3,21 @@ from ckanext.googleanalytics.model import PackageStats, ResourceStats, AudienceL
 from datetime import datetime, timedelta
 
 
-def last_calendar_week():
+def last_week():
     today = datetime.today()
-    start_date = today - timedelta(days=today.weekday(), weeks=1)
-    end_date = today - timedelta(days=today.weekday() + 1)
+    end_date = today - timedelta(days=1)
+    start_date = end_date - timedelta(days=7)
     return start_date, end_date
 
 
-def last_calendar_month():
+def last_month():
     today = datetime.today()
-    end_date = today.replace(day=1) - timedelta(days=1)
-    start_date = end_date.replace(day=1)
+    end_date = today - timedelta(days=1)
+    start_date = end_date - timedelta(days=30)
     return start_date, end_date
 
-#  TODO: Currently, this doesn't actually return the last calendar year, should it?
-#        But if it would, then there would be no option available to check the latest data
-def last_calendar_year():
+
+def last_year():
     today = datetime.today()
     end_date = today - timedelta(days=1)
     start_date = end_date - timedelta(days=365)
@@ -27,11 +26,11 @@ def last_calendar_year():
 
 def last_calendar_period(period):
     if period == 'week':
-        return last_calendar_week()
+        return last_week()
     elif period == 'month':
-        return last_calendar_month()
+        return last_month()
     elif period == 'year':
-        return last_calendar_year()
+        return last_year()
     else:
         raise ValueError("The period parameter should be either 'week', 'month' or 'year'")
 
