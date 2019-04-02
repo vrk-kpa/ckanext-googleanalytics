@@ -176,8 +176,13 @@ class PackageStats(Base):
     def get_top(cls, limit=20):
         package_stats = []
         # TODO: Reimplement in more efficient manner if needed (using RANK OVER and PARTITION in raw sql)
-        unique_packages = model.Session.query(cls.package_id, func.count(cls.visits), func.count(cls.entrances), func.count(cls.downloads)).group_by(cls.package_id).order_by(
-            func.count(cls.visits).desc()).limit(limit).all()
+        unique_packages = (model.Session.query(cls.package_id,
+                                               func.count(cls.visits),
+                                               func.count(cls.entrances),
+                                               func.count(cls.downloads))
+                                        .group_by(cls.package_id)
+                                        .order_by(func.count(cls.visits).desc())
+                                        .limit(limit).all())
         # Adding last date associated to this package stat and filtering out private and deleted packages
         if unique_packages is not None:
             for package in unique_packages:
