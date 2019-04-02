@@ -43,7 +43,7 @@ def google_analytics_dataset_report(time):
     start_date, end_date = last_calendar_period(time)
 
     # get package objects corresponding to popular GA content
-    top_packages = PackageStats.get_total_visits(start_date=start_date, end_date=end_date, limit=0)
+    top_packages = PackageStats.get_total_visits(start_date=start_date, end_date=end_date, limit=None)
     top_20 = top_packages[:20]
 
     return {
@@ -77,7 +77,7 @@ def google_analytics_dataset_least_popular_report(time):
     start_date, end_date = last_calendar_period(time)
 
     # get package objects corresponding to popular GA content
-    top_packages = PackageStats.get_total_visits(start_date=start_date, end_date=end_date, limit=0, descending=False)
+    top_packages = PackageStats.get_total_visits(start_date=start_date, end_date=end_date, limit=None, descending=False)
     top_20 = top_packages[:20]
 
     return {
