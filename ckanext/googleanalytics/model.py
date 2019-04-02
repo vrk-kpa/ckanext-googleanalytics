@@ -283,7 +283,10 @@ class PackageStats(Base):
     def get_organization(cls, dataset_name):
         url = config.get("ckan.site_url") + "/data/api/3/action/package_show?id=" + dataset_name
         response = requests.get(url)
-        return response.json()['result']['organization']['name']
+        if response:
+            return response.json()['result']['organization']['name']
+        else:
+            response.raise_for_status()
 
     @classmethod
     def get_organizations_with_most_popular_datasets(cls, start_date, end_date, limit=20):
