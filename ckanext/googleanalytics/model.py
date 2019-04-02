@@ -287,7 +287,7 @@ class PackageStats(Base):
     @classmethod
     def get_organizations_with_most_popular_datasets(cls, start_date, end_date, limit=20):
         all_packages_result = cls.get_total_visits(start_date, end_date, limit=None)
-        organization_stats = {}  # Map organization name to total visit count
+        organization_stats = {}
         for package in all_packages_result:
             package_id = package["package_id"]
             visits = package["visits"]
