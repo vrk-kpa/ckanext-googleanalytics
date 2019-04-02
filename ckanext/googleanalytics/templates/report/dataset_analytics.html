@@ -14,19 +14,7 @@
           <td>{{ h.link_to(toppackage.package_name, h.url_for(controller='package', action='read', id=toppackage.package_id)) }}</td>
           <td>{{ toppackage.visits }}</td>
           <td>{{ toppackage.entrances }}</td>
-          {% set percent = 0 %}
-          {% if toppackage.visits != 0 %}{% set percent = ((toppackage.entrances / toppackage.visits) * 100)|round(1, 'floor') %}{% endif %}
-          {% set percent_class = 'color_danger' %}
-          {% if percent > 25 %}
-            {% set percent_class = 'color_warning' %}
-              {% if percent > 50 %}
-                {% set percent_class = 'color_info' %}
-                {% if percent > 75 %}
-                  {% set percent_class = 'color_success' %}
-                {% endif %}
-              {% endif %}
-          {% endif %}
-          <td class="{{ percent_class }}">{{ percent }}%</td>
+          {% snippet "report/snippets/entrances_percentage_td.html", total_visits=toppackage.visits, total_entrances=toppackage.entrances %}
           <td>{{ toppackage.downloads }}</td>
         </tr>
       {% endfor %}

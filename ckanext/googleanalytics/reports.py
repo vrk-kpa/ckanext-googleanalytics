@@ -3,27 +3,48 @@ from ckanext.googleanalytics.model import PackageStats, ResourceStats, AudienceL
 from datetime import datetime, timedelta
 
 
+def last_week():
+    today = datetime.today()
+    end_date = today - timedelta(days=1)
+    start_date = end_date - timedelta(days=7)
+    return start_date, end_date
+
+
+def last_month():
+    today = datetime.today()
+    end_date = today - timedelta(days=1)
+    start_date = end_date - timedelta(days=30)
+    return start_date, end_date
+
+
+def last_year():
+    today = datetime.today()
+    end_date = today - timedelta(days=1)
+    start_date = end_date - timedelta(days=365)
+    return start_date, end_date
+
+
+def last_calendar_period(period):
+    if period == 'week':
+        return last_week()
+    elif period == 'month':
+        return last_month()
+    elif period == 'year':
+        return last_year()
+    else:
+        raise ValueError("The period parameter should be either 'week', 'month' or 'year'")
+
+
 def google_analytics_dataset_report(time):
     '''
     Generates report based on google analytics data. number of views per package
     '''
-    
-    today = datetime.today()
-    if time == 'week':
-        start_date = today - timedelta(days=today.weekday(), weeks=1)
-        end_date = today - timedelta(days=today.weekday() + 1)
-    elif time == 'month':
-        end_date = today.replace(day=1) - timedelta(days=1)
-        start_date = end_date.replace(day=1)
-    elif time == 'year':
-        end_date = today - timedelta(days=1)
-        start_date = end_date - timedelta(days=365)
-        
+
+    start_date, end_date = last_calendar_period(time)
 
     # get package objects corresponding to popular GA content
-    top_packages = PackageStats.get_total_visits(start_date=start_date, end_date=end_date, limit=0)
+    top_packages = PackageStats.get_total_visits(start_date=start_date, end_date=end_date, limit=None)
     top_20 = top_packages[:20]
-
 
     return {
         'table': top_packages,
@@ -47,25 +68,16 @@ googleanalytics_dataset_report_info = {
     'template': 'report/dataset_analytics.html',
 }
 
+
 def google_analytics_dataset_least_popular_report(time):
     '''
     Generates report based on google analytics data. number of views per package
     '''
-    
-    today = datetime.today()
-    if time == 'week':
-        start_date = today - timedelta(days=today.weekday(), weeks=1)
-        end_date = today - timedelta(days=today.weekday() + 1)
-    elif time == 'month':
-        end_date = today.replace(day=1) - timedelta(days=1)
-        start_date = end_date.replace(day=1)
-    elif time == 'year':
-        end_date = today - timedelta(days=1)
-        start_date = end_date - timedelta(days=365)
-        
+
+    start_date, end_date = last_calendar_period(time)
 
     # get package objects corresponding to popular GA content
-    top_packages = PackageStats.get_total_visits(start_date=start_date, end_date=end_date, limit=0, desc=False)
+    top_packages = PackageStats.get_total_visits(start_date=start_date, end_date=end_date, limit=None, descending=False)
     top_20 = top_packages[:20]
 
     return {
@@ -159,4 +171,23 @@ googleanalytics_location_report_info = {
     'option_combinations': None,
     'generate': google_analytics_location_report,
     'template': 'report/location_analytics.html'
+}
+
+
+def google_analytics_organizations_with_most_popular_datasets(time):
+    start_date, end_date = last_calendar_period(time)
+    most_popular_organizations = PackageStats.get_organizations_with_most_popular_datasets(start_date, end_date)
+    return {
+        'table': most_popular_organizations
+    }
+
+
+googleanalytics_organizations_with_most_popular_datasets_info = {
+    'name': 'google-analytics-most-popular-organizations',
+    'title': 'Most popular organizations',
+    'description': 'Google analytics showing most popular organizations by visited datasets',
+    'option_defaults': OrderedDict((('time', 'month'),)),
+    'option_combinations': google_analytics_dataset_option_combinations,
+    'generate': google_analytics_organizations_with_most_popular_datasets,
+    'template': 'report/organization_analytics.html'
 }
