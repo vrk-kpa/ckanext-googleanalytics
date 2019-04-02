@@ -45,7 +45,8 @@ class PackageStats(Base):
         '''
         package = model.Session.query(cls).filter(cls.package_id == item_id).filter(cls.visit_date == visit_date).first()
         if package is None:
-            package = PackageStats(package_id=item_id, visit_date=visit_date, visits=visits, entrances=entrances, downloads=downloads)
+            package = PackageStats(package_id=item_id, visit_date=visit_date,
+                                   visits=visits, entrances=entrances, downloads=downloads)
             model.Session.add(package)
         else:
             if visits != 0:
@@ -68,7 +69,7 @@ class PackageStats(Base):
             cls.update_visits(item_id=package_id, visit_date=visit_date, visits=0, entrances=0, downloads=downloads)
         else:
             package.downloads += downloads
-        
+
         log.debug("Downloads updated for date: %s and packag: %s", visit_date, package_id)
         model.Session.flush()
         return True
@@ -80,7 +81,7 @@ class PackageStats(Base):
         if package is not None:
             pack_name = package.title or package.name
         return pack_name
-            
+
     @classmethod
     def get_visits(cls, start_date, end_date):
         '''
@@ -98,7 +99,7 @@ class PackageStats(Base):
         return cls.convert_to_dict(package_visits, None)
 
     @classmethod
-    def get_total_visits(cls, start_date, end_date, limit = 50, descending=True):
+    def get_total_visits(cls, start_date, end_date, limit=50, descending=True):
         '''
         Returns datasets and their visitors amount summed during time span, grouped by dataset.
 
@@ -111,13 +112,13 @@ class PackageStats(Base):
                 return desc(value)
             else:
                 return value
-            
+
         visits_by_dataset = model.Session.query(
-                cls.package_id,
-                func.sum(cls.visits).label('total_visits'),
-                func.sum(cls.downloads).label('total_downloads'),
-                func.sum(cls.entrances).label('total_entrances')
-            ) \
+            cls.package_id,
+            func.sum(cls.visits).label('total_visits'),
+            func.sum(cls.downloads).label('total_downloads'),
+            func.sum(cls.entrances).label('total_entrances')
+        ) \
             .filter(cls.visit_date >= start_date) \
             .filter(cls.visit_date <= end_date) \
             .group_by(cls.package_id) \
@@ -134,7 +135,7 @@ class PackageStats(Base):
                 "entrances": dataset.total_entrances,
                 "downloads": dataset.total_downloads,
             })
-    
+
         return datasets
 
     @classmethod
@@ -190,7 +191,8 @@ class PackageStats(Base):
 
                 last_date = model.Session.query(func.max(cls.visit_date)).filter(cls.package_id == package_id).first()
 
-                ps = PackageStats(package_id=package_id, visit_date=last_date[0], visits=visits, entrances=package[2], downloads=package[3])
+                ps = PackageStats(package_id=package_id,
+                                  visit_date=last_date[0], visits=visits, entrances=package[2], downloads=package[3])
                 package_stats.append(ps)
         dictat = PackageStats.convert_to_dict(package_stats, None)
         return dictat
@@ -283,7 +285,6 @@ class PackageStats(Base):
         response = requests.get(url)
         return response.json()['result']['organization']['name']
 
-
     @classmethod
     def get_organizations_with_most_popular_datasets(cls, start_date, end_date, limit=20):
         all_packages_result = cls.get_total_visits(start_date, end_date, limit=None)
@@ -313,7 +314,7 @@ class PackageStats(Base):
                  "total_visits": stats["visits"],
                  "total_downloads": stats["downloads"],
                  "total_entrances": stats["entrances"]
-                }
+                 }
             )
 
         return sorted(organization_list, key=lambda organization: organization["total_visits"], reverse=True)[:limit]
@@ -512,6 +513,7 @@ class ResourceStats(Base):
         else:
             return result.visit_date
 
+
 class AudienceLocation(Base):
     """
     Contains stats for different visitors locations
@@ -521,7 +523,7 @@ class AudienceLocation(Base):
 
     id = Column(types.Integer, primary_key=True, autoincrement=True, unique=True)
     location_name = Column(types.UnicodeText, nullable=False, primary_key=True)
-    
+
     visits_by_date = relationship("AudienceLocationDate", back_populates="location")
 
     @classmethod

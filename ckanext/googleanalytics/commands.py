@@ -93,8 +93,8 @@ class GACommand(p.toolkit.CkanCommand):
         try:
             self.service = init_service(credentialsfile)
         except TypeError:
-            print ('Have you correctly run the init service task and '
-                   'specified the correct file here')
+            print('Have you correctly run the init service task and '
+                  'specified the correct file here')
             raise Exception('Unable to create a service')
 
         return self.service
@@ -270,7 +270,7 @@ class GACommand(p.toolkit.CkanCommand):
             if not item:
                 self.log.warning("Couldn't find package %s" % package_id_or_name)
                 continue
-            
+
             for date, value in date_collection.iteritems():
                 PackageStats.update_visits(item.id, date, value["visits"], value["entrances"])
 
@@ -291,7 +291,7 @@ class GACommand(p.toolkit.CkanCommand):
             if not package:
                 self.log.warning("Couldn't find package %s" % package_id_or_name)
                 continue
-            
+
             for date, value in date_collection.iteritems():
                 PackageStats.update_downloads(package_id=package.id, visit_date=date, downloads=value["downloads"])
 
@@ -313,7 +313,7 @@ class GACommand(p.toolkit.CkanCommand):
             for result in results.get('rows'):
                 path = result[0]
                 visit_date = datetime.datetime.strptime(result[1], "%Y%m%d").date()
-                
+
                 splitPath = path.split('/')
                 path_with_vars = splitPath[splitPath.index('dataset') + 1]
                 package_id_or_name = path_with_vars.split('?')[0].split('&')[0]
@@ -324,10 +324,10 @@ class GACommand(p.toolkit.CkanCommand):
                 # add package_id_or_name if not already there
                 if package_id_or_name not in data:
                     data.setdefault(package_id_or_name, {})
-                
+
                 if visit_date not in data[package_id_or_name]:
                     data[package_id_or_name].setdefault(visit_date, {"visits": 0, "entrances": 0})
-                
+
                 # Adds visits in different languages together
                 data[package_id_or_name][visit_date]['visits'] += int(visit_count)
                 data[package_id_or_name][visit_date]['entrances'] += int(entrance_count)
@@ -345,7 +345,7 @@ class GACommand(p.toolkit.CkanCommand):
             for result in results.get('rows'):
                 path = result[0]
                 visit_date = datetime.datetime.strptime(result[1], "%Y%m%d").date()
-                
+
                 splitPath = path.split('/')
                 resource_id = splitPath[splitPath.index('resource') + 1]
 
@@ -354,10 +354,10 @@ class GACommand(p.toolkit.CkanCommand):
                 # add resource_id if not already there
                 if resource_id not in data:
                     data.setdefault(resource_id, {})
-                
+
                 if visit_date not in data[resource_id]:
-                    data[resource_id].setdefault(visit_date, { "downloads": 0 })
-                
+                    data[resource_id].setdefault(visit_date, {"downloads": 0})
+
                 # Adds downloads in different languages together
                 data[resource_id][visit_date]['downloads'] += int(download_count)
 
@@ -383,16 +383,16 @@ class GACommand(p.toolkit.CkanCommand):
                 # add package if not already there
                 if package_name not in data:
                     data.setdefault(package_name, {})
-                
+
                 # add visit_date if not already there
                 if visit_date not in data[package_name]:
                     data[package_name].setdefault(visit_date, {"downloads": 0})
-                
-                # Set total downloads to 
+
+                # Set total downloads to
                 data[package_name][visit_date]['downloads'] += int(downloads)
-        
+
         return data
-                    
+
     def resolver_type_visitorlocation(self, results, data):
         '''
         formats results and returns a dictionary like:
@@ -418,5 +418,4 @@ class GACommand(p.toolkit.CkanCommand):
         last_month_start = last_month_end.replace(day=1)
         stats = PackageStats.get_total_visits(last_month_start, last_month_end, limit=20)
         for stat in stats:
-            print (stat['entrances'], stat['package_name'], stat['visits'])
-        
+            print(stat['entrances'], stat['package_name'], stat['visits'])

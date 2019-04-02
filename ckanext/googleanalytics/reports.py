@@ -34,6 +34,7 @@ def last_calendar_period(period):
     else:
         raise ValueError("The period parameter should be either 'week', 'month' or 'year'")
 
+
 def google_analytics_dataset_report(time):
     '''
     Generates report based on google analytics data. number of views per package
@@ -44,7 +45,6 @@ def google_analytics_dataset_report(time):
     # get package objects corresponding to popular GA content
     top_packages = PackageStats.get_total_visits(start_date=start_date, end_date=end_date, limit=0)
     top_20 = top_packages[:20]
-
 
     return {
         'table': top_packages,
@@ -67,6 +67,7 @@ googleanalytics_dataset_report_info = {
     'generate': google_analytics_dataset_report,
     'template': 'report/dataset_analytics.html',
 }
+
 
 def google_analytics_dataset_least_popular_report(time):
     '''
