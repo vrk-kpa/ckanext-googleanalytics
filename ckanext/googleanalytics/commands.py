@@ -7,7 +7,7 @@ from pylons import config as pylonsconfig
 import ckan.model as model
 
 import ckan.plugins as p
-from ckanext.googleanalytics.model import PackageStats, ResourceStats, AudienceLocationDate
+from ckanext.googleanalytics.model import PackageStats, ResourceStats, AudienceLocationDate, SearchStats
 
 PACKAGE_URL = '/dataset/'  # XXX get from routes...
 DEFAULT_RESOURCE_URL_TAG = '/download/'
@@ -210,6 +210,15 @@ class GACommand(p.toolkit.CkanCommand):
             'dimensions': "ga:pagePath, ga:date, ga:eventCategory",
             'resolver': self.resolver_type_package_downloads,
             'save': self.save_type_package_downloads,
+        }, {
+            'type': 'search_terms',
+            'dates': self.get_dates_between_update(given_start_date, PackageStats.get_latest_update_date()),
+            'filters': ";".join(botFilters),
+            'metrics': "ga:searchUniques",
+            'sort': "ga:date",
+            'dimensions': "ga:searchKeyword, ga:date",
+            'resolver': self.resolver_type_search_terms,
+            'save': self.save_type_search_terms,
         }]
 
         # loop through queries, parse and save them to db
@@ -301,6 +310,12 @@ class GACommand(p.toolkit.CkanCommand):
             for visit_date, count in visits.iteritems():
                 AudienceLocationDate.update_visits(location, visit_date, count)
                 self.log.info("Updated %s on %s with %s visits" % (location, visit_date, count))
+
+    def save_type_search_terms(self, data):
+        print("save search data: " + str(data))
+        for search_term, search_term_count_collection in data.iteritems():
+            for visit_date, search_count in search_term_count_collection.iteritems():
+                SearchStats.update_search_term_count(search_term, visit_date, search_count)
 
     def resolver_type_package(self, results, data):
         '''
@@ -411,6 +426,24 @@ class GACommand(p.toolkit.CkanCommand):
                 if location not in data:
                     data.setdefault(location, {})["visits"] = {}
                 data[location]['visits'][visit_date] = int(count)
+        return data
+
+    def resolver_type_search_terms(self, results, data):
+        '''
+        TODO: Document dictionary format
+        '''
+        if 'rows' in results:
+            for result in results.get('rows'):
+                search_term = result[0]
+                date = result[1]
+                search_count = result[2]
+
+                visit_date = datetime.datetime.strptime(date, "%Y%m%d").date()
+                print("Google Analytics result row: " + str(result))
+                if search_term not in data:
+                    data[search_term] = {visit_date: search_count}
+                else:
+                    data[search_term][visit_date] = search_count
         return data
 
     def test_queries(self):

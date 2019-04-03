@@ -168,4 +168,4 @@ class GoogleAnalyticsPlugin(p.SingletonPlugin, DefaultTranslation):
         import reports
         return [reports.googleanalytics_dataset_report_info, reports.googleanalytics_resource_report_info,
                 reports.googleanalytics_location_report_info, reports.googleanalytics_dataset_least_popular_report_info,
-                reports.googleanalytics_organizations_with_most_popular_datasets_info]
+                reports.googleanalytics_organizations_with_most_popular_datasets_info, reports.googleanalytics_most_popular_search_terms_info]
