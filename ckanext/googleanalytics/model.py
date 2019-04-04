@@ -180,9 +180,9 @@ class PackageStats(Base):
                                                func.count(cls.visits),
                                                func.count(cls.entrances),
                                                func.count(cls.downloads))
-                                        .group_by(cls.package_id)
-                                        .order_by(func.count(cls.visits).desc())
-                                        .limit(limit).all())
+                           .group_by(cls.package_id)
+                           .order_by(func.count(cls.visits).desc())
+                           .limit(limit).all())
         # Adding last date associated to this package stat and filtering out private and deleted packages
         if unique_packages is not None:
             for package in unique_packages:
@@ -793,7 +793,7 @@ class SearchStats(Base):
     search_term = Column(types.UnicodeText, nullable=False, primary_key=True)
     date = Column(types.DateTime, default=datetime.now, primary_key=True)
     count = Column(types.Integer)
-    
+
     @classmethod
     def get(cls, id):
         return model.Session.query(cls).filter(cls.id == id).first()
@@ -821,7 +821,7 @@ class SearchStats(Base):
                 search_term_counts[result.search_term]['count'] += result.count
             else:
                 search_term_counts[result.search_term] = {'count': result.count}
-        
+
         search_term_list = []
         for search_term, search_term_info in search_term_counts.iteritems():
             search_term_list.append(
