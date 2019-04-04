@@ -312,7 +312,6 @@ class GACommand(p.toolkit.CkanCommand):
                 self.log.info("Updated %s on %s with %s visits" % (location, visit_date, count))
 
     def save_type_search_terms(self, data):
-        print("save search data: " + str(data))
         for search_term, search_term_count_collection in data.iteritems():
             for visit_date, search_count in search_term_count_collection.iteritems():
                 SearchStats.update_search_term_count(search_term, visit_date, search_count)
@@ -443,7 +442,6 @@ class GACommand(p.toolkit.CkanCommand):
                 search_count = result[2]
 
                 visit_date = datetime.datetime.strptime(date, "%Y%m%d").date()
-                print("Google Analytics result row: " + str(result))
                 if search_term not in data:
                     data[search_term] = {visit_date: search_count}
                 else:
