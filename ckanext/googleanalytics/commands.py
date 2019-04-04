@@ -430,7 +430,11 @@ class GACommand(p.toolkit.CkanCommand):
 
     def resolver_type_search_terms(self, results, data):
         '''
-        TODO: Document dictionary format
+        formats results and returns a dictionary like:
+        {
+            'search_term_name': {2019-02-24: 500, ...},
+            'another_search_term': {2019-02-25: 600, ...}
+        }
         '''
         if 'rows' in results:
             for result in results.get('rows'):
