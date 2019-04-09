@@ -180,9 +180,9 @@ class PackageStats(Base):
                                                func.count(cls.visits),
                                                func.count(cls.entrances),
                                                func.count(cls.downloads))
-                                        .group_by(cls.package_id)
-                                        .order_by(func.count(cls.visits).desc())
-                                        .limit(limit).all())
+                           .group_by(cls.package_id)
+                           .order_by(func.count(cls.visits).desc())
+                           .limit(limit).all())
         # Adding last date associated to this package stat and filtering out private and deleted packages
         if unique_packages is not None:
             for package in unique_packages:
@@ -781,6 +781,56 @@ class AudienceLocationDate(Base):
             visits.append(AudienceLocationDate.as_dict(location))
 
         return visits
+
+
+class SearchStats(Base):
+    """
+    Contains stats for search terms
+    """
+    __tablename__ = 'search_terms'
+
+    id = Column(types.Integer, primary_key=True, autoincrement=True, unique=True)
+    search_term = Column(types.UnicodeText, nullable=False, primary_key=True)
+    date = Column(types.DateTime, default=datetime.now, primary_key=True)
+    count = Column(types.Integer)
+
+    @classmethod
+    def get(cls, id):
+        return model.Session.query(cls).filter(cls.id == id).first()
+
+    @classmethod
+    def update_search_term_count(cls, search_term, date, count):
+        '''
+        Updates the search term search count
+
+        :param search_term: Search term used in site internal search
+        :param count: Number of times the search term was searched
+        :return: True for a successful update, otherwise False
+        '''
+        model.Session.add(SearchStats(search_term=search_term, date=date, count=count))
+        model.Session.commit()
+        model.Session.flush()
+        return True
+
+    @classmethod
+    def get_most_popular_search_terms(cls, start_date, end_date, limit=20):
+        results = model.Session.query(cls).filter(cls.date >= start_date).filter(cls.date <= end_date).limit(limit)
+        search_term_counts = {}
+        for result in results:
+            if result.search_term in search_term_counts:
+                search_term_counts[result.search_term]['count'] += result.count
+            else:
+                search_term_counts[result.search_term] = {'count': result.count}
+
+        search_term_list = []
+        for search_term, search_term_info in search_term_counts.iteritems():
+            search_term_list.append(
+                {"search_term": search_term,
+                 "count": search_term_info['count']
+                 }
+            )
+
+        return sorted(search_term_list, key=lambda search_term: search_term["count"], reverse=True)[:limit]
 
 
 def maybe_negate(value, inputvalue, negate=False):

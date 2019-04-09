@@ -1,5 +1,5 @@
 from ckan.common import OrderedDict
-from ckanext.googleanalytics.model import PackageStats, ResourceStats, AudienceLocationDate
+from ckanext.googleanalytics.model import PackageStats, ResourceStats, AudienceLocationDate, SearchStats
 from datetime import datetime, timedelta
 
 
@@ -190,4 +190,23 @@ googleanalytics_organizations_with_most_popular_datasets_info = {
     'option_combinations': google_analytics_dataset_option_combinations,
     'generate': google_analytics_organizations_with_most_popular_datasets,
     'template': 'report/organization_analytics.html'
+}
+
+
+def google_analytics_most_popular_search_terms(time):
+    start_date, end_date = last_calendar_period(time)
+    most_popular_search_terms = SearchStats.get_most_popular_search_terms(start_date, end_date)
+    return {
+        'table': most_popular_search_terms
+    }
+
+
+googleanalytics_most_popular_search_terms_info = {
+    'name': 'google-analytics-most-popular-search-terms',
+    'title': 'Most popular search terms',
+    'description': 'Google analytics showing most popular search terms',
+    'option_defaults': OrderedDict((('time', 'month'),)),
+    'option_combinations': google_analytics_dataset_option_combinations,
+    'generate': google_analytics_most_popular_search_terms,
+    'template': 'report/search_term_analytics.html'
 }
