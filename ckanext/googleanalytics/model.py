@@ -23,9 +23,9 @@ class PackageStats(Base):
 
     package_id = Column(types.UnicodeText, nullable=False, index=True, primary_key=True)
     visit_date = Column(types.DateTime, default=datetime.now, primary_key=True)
-    visits = Column(types.Integer)
-    entrances = Column(types.Integer)
-    downloads = Column(types.Integer)
+    visits = Column(types.Integer, default=0)
+    entrances = Column(types.Integer, default=0)
+    downloads = Column(types.Integer, default=0)
 
     @classmethod
     def get(cls, id):
@@ -49,10 +49,8 @@ class PackageStats(Base):
                                    visits=visits, entrances=entrances, downloads=downloads)
             model.Session.add(package)
         else:
-            if visits != 0:
-                package.visits = visits
-            if entrances != 0:
-                package.entrances = entrances
+            package.visits = visits
+            package.entrances = entrances
 
         log.debug("Number of visits for date: %s updated for package id: %s", visit_date, item_id)
         model.Session.flush()
@@ -338,7 +336,7 @@ class ResourceStats(Base):
 
     resource_id = Column(types.UnicodeText, nullable=False, index=True, primary_key=True)
     visit_date = Column(types.DateTime, default=datetime.now, primary_key=True)
-    visits = Column(types.Integer)
+    visits = Column(types.Integer, default=0)
 
     @classmethod
     def get(cls, id):
@@ -565,7 +563,7 @@ class AudienceLocationDate(Base):
     id = Column(types.Integer, primary_key=True, autoincrement=True, unique=True)
     date = Column(types.DateTime, default=datetime.now, primary_key=True)
 
-    visits = Column(types.Integer)
+    visits = Column(types.Integer, default=0)
     location_id = Column(types.Integer, ForeignKey('audience_location.id'))
 
     location = relationship("AudienceLocation", back_populates="visits_by_date")

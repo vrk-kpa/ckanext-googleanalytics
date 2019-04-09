@@ -2,6 +2,7 @@ import os
 import re
 import logging
 import datetime
+from collections import OrderedDict
 
 from pylons import config as pylonsconfig
 import ckan.model as model
@@ -74,6 +75,8 @@ class GACommand(p.toolkit.CkanCommand):
             self.init_db()
             self.load_analytics(self.args)
             self.test_queries()
+        elif cmd == 'migrate':
+            self.migrate()
         else:
             self.log.error('Command "%s" not recognized' % (cmd,))
 
@@ -251,13 +254,13 @@ class GACommand(p.toolkit.CkanCommand):
         now = datetime.datetime.now()
 
         # If there is no last valid value found from database then we make sure to grab all values from start. i.e. 2014
-        # We want to take minimum 2 days worth logs even latest_date is today
         floor_date = datetime.date(2014, 1, 1)
 
+        # Starting date is by default the given start_date parameter. If such parameter doesn't exist, starting date
+        # is two days before last update.
         if start_date is not None:
             floor_date = start_date
-
-        if latest_date is not None:
+        elif latest_date is not None:
             floor_date = latest_date - datetime.timedelta(days=2)
 
         current_month = datetime.date(now.year, now.month, 1)
@@ -454,3 +457,23 @@ class GACommand(p.toolkit.CkanCommand):
         stats = PackageStats.get_total_visits(last_month_start, last_month_end, limit=20)
         for stat in stats:
             print(stat['entrances'], stat['package_name'], stat['visits'])
+
+    def migrate(self):
+        '''
+        Migrate database changes. Please note that this only adds the default values and not real data.
+        Therefore, you need to separately execute the 'loadanalytics' task giving '2014-01-01' as the start_date
+        parameter.
+        '''
+        MIGRATIONS_ADD = OrderedDict({
+            "downloads": "ALTER TABLE package_stats ADD COLUMN downloads integer DEFAULT 0",
+            "entrances": "ALTER TABLE package_stats ADD COLUMN entrances integer DEFAULT 0"
+        })
+        print("Running migrations")
+        current_cols_query_packages = "select column_name from INFORMATION_SCHEMA.COLUMNS where table_name = 'package_stats';"
+        current_package_cols = list([m[0] for m in model.Session.execute(current_cols_query_packages)])
+        for column, query in MIGRATIONS_ADD.iteritems():
+            if column not in current_package_cols:
+                print("Adding column '{0}'".format(column))
+                print("Executing '{0}'".format(query))
+                model.Session.execute(query)
+                model.Session.commit()
