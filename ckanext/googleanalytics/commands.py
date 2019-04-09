@@ -423,7 +423,11 @@ class GACommand(p.toolkit.CkanCommand):
             print(stat['entrances'], stat['package_name'], stat['visits'])
 
     def migrate(self):
-
+        '''
+        Migrate database changes. Please note that this only adds the default values and not real data.
+        Therefore, you need to separately execute the 'loadanalytics' task giving '2014-01-01' as the start_date
+        parameter.
+        '''
         MIGRATIONS_ADD = OrderedDict({
             "downloads": "ALTER TABLE package_stats ADD COLUMN downloads integer DEFAULT 0",
             "entrances": "ALTER TABLE package_stats ADD COLUMN entrances integer DEFAULT 0"
