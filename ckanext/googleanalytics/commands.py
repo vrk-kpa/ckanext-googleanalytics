@@ -245,9 +245,10 @@ class GACommand(p.toolkit.CkanCommand):
         now = datetime.datetime.now()
 
         # If there is no last valid value found from database then we make sure to grab all values from start. i.e. 2014
-        # We want to take minimum 2 days worth logs even latest_date is today
         floor_date = datetime.date(2014, 1, 1)
 
+        # Starting date is by default the given start_date parameter. If such parameter doesn't exist, starting date
+        # is two days before last update.
         if start_date is not None:
             floor_date = start_date
         elif latest_date is not None:
