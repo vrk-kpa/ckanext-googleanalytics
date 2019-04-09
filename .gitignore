@@ -37,3 +37,6 @@ nosetests.xml
 
 *~
 .settings
+
+# Credentials
+credentials.json
