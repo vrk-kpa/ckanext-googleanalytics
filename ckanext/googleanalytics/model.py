@@ -790,7 +790,7 @@ class SearchStats(Base):
     id = Column(types.Integer, primary_key=True, autoincrement=True, unique=True)
     search_term = Column(types.UnicodeText, nullable=False, primary_key=True)
     date = Column(types.DateTime, default=datetime.now, primary_key=True)
-    count = Column(types.Integer)
+    count = Column(types.Integer, default=0)
 
     @classmethod
     def get(cls, id):
