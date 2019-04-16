@@ -111,18 +111,22 @@ class PackageStats(Base):
             else:
                 return value
 
-        visits_by_dataset = model.Session.query(
-            cls.package_id,
-            func.sum(cls.visits).label('total_visits'),
-            func.sum(cls.downloads).label('total_downloads'),
-            func.sum(cls.entrances).label('total_entrances')
-        ) \
-            .filter(cls.visit_date >= start_date) \
-            .filter(cls.visit_date <= end_date) \
-            .group_by(cls.package_id) \
-            .order_by(sorting_direction(func.sum(cls.visits), descending)) \
-            .limit(limit) \
+        visits_by_dataset = (
+            model.Session.query(
+                cls.package_id,
+                func.sum(cls.visits).label('total_visits'),
+                func.sum(cls.downloads).label('total_downloads'),
+                func.sum(cls.entrances).label('total_entrances')
+            )
+            .filter(cls.visit_date >= start_date)
+            .filter(cls.visit_date <= end_date)
+            .filter_by(state='active')
+            .filter_by(private=False)
+            .group_by(cls.package_id)
+            .order_by(sorting_direction(func.sum(cls.visits), descending))
+            .limit(limit)
             .all()
+            )
 
         datasets = []
         for dataset in visits_by_dataset:
