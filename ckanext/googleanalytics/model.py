@@ -89,10 +89,13 @@ class PackageStats(Base):
         :param end_date: Date
         :return: [{ visits, package_id, package_name, visit_date }, ...]
         '''
-        package_visits = model.Session.query(cls) \
-            .filter(cls.visit_date >= start_date) \
-            .filter(cls.visit_date <= end_date) \
-            .all()
+        package_visits = (model.Session.query(cls)
+            .join(model.Package, cls.package_id == model.Package.id)
+            .filter(model.Package.state == 'active')
+            .filter(model.Package.private == False)  # noqa: E712
+            .filter(cls.visit_date >= start_date)
+            .filter(cls.visit_date <= end_date)
+            .all())
 
         return cls.convert_to_dict(package_visits, None)
 
@@ -118,10 +121,11 @@ class PackageStats(Base):
                 func.sum(cls.downloads).label('total_downloads'),
                 func.sum(cls.entrances).label('total_entrances')
             )
+            .join(model.Package, cls.package_id == model.Package.id)
+            .filter(model.Package.state == 'active')
+            .filter(model.Package.private == False)  # noqa: E712
             .filter(cls.visit_date >= start_date)
             .filter(cls.visit_date <= end_date)
-            .filter_by(state='active')
-            .filter_by(private=False)
             .group_by(cls.package_id)
             .order_by(sorting_direction(func.sum(cls.visits), descending))
             .limit(limit)
