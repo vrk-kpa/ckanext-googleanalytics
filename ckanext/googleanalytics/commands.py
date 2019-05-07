@@ -215,7 +215,7 @@ class GACommand(p.toolkit.CkanCommand):
             'save': self.save_type_package_downloads,
         }, {
             'type': 'search_terms',
-            'dates': self.get_dates_between_update(given_start_date, PackageStats.get_latest_update_date()),
+            'dates': self.get_dates_between_update(given_start_date, SearchStats.get_latest_update_date()),
             'filters': ";".join(botFilters),
             'metrics': "ga:searchUniques",
             'sort': "ga:date",
