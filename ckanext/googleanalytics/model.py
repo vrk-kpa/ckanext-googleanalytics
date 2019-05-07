@@ -805,6 +805,14 @@ class SearchStats(Base):
         return model.Session.query(cls).filter(cls.id == id).first()
 
     @classmethod
+    def get_latest_update_date(cls):
+        result = model.Session.query(cls).order_by(cls.date.desc()).first()
+        if result is None:
+            return None
+        else:
+            return result.date
+
+    @classmethod
     def update_search_term_count(cls, search_term, date, count):
         '''
         Updates the search term search count
@@ -820,7 +828,7 @@ class SearchStats(Base):
 
     @classmethod
     def get_most_popular_search_terms(cls, start_date, end_date, limit=20):
-        results = model.Session.query(cls).filter(cls.date >= start_date).filter(cls.date <= end_date).limit(limit)
+        results = model.Session.query(cls).filter(cls.date >= start_date).filter(cls.date <= end_date).limit(limit).all()
         search_term_counts = {}
         for result in results:
             if result.search_term in search_term_counts:
