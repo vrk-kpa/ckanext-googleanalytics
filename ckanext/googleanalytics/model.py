@@ -295,7 +295,10 @@ class PackageStats(Base):
         url = config.get("ckan.site_url") + "/data/api/3/action/package_show?id=" + dataset_name
         response = requests.get(url)
         if response:
-            return response.json()['result']['organization']['name']
+            try:
+                return response.json()['result']['organization']['name']
+            except TypeError:
+                return None
         else:
             response.raise_for_status()
 
@@ -310,16 +313,17 @@ class PackageStats(Base):
             entrances = package["entrances"]
 
             organization_name = cls.get_organization(package_id)
-            if(organization_name in organization_stats):
-                organization_stats[organization_name]["visits"] += visits
-                organization_stats[organization_name]["downloads"] += downloads
-                organization_stats[organization_name]["entrances"] += entrances
-            else:
-                organization_stats[organization_name] = {
-                    "visits": visits,
-                    "downloads": downloads,
-                    "entrances": entrances
-                }
+            if organization_name:
+                if(organization_name in organization_stats):
+                    organization_stats[organization_name]["visits"] += visits
+                    organization_stats[organization_name]["downloads"] += downloads
+                    organization_stats[organization_name]["entrances"] += entrances
+                else:
+                    organization_stats[organization_name] = {
+                        "visits": visits,
+                        "downloads": downloads,
+                        "entrances": entrances
+                    }
 
         organization_list = []
         for organization_name, stats in organization_stats.iteritems():
