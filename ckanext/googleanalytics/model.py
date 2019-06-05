@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from sqlalchemy import types, func, Column, ForeignKey, not_, desc
 from sqlalchemy.orm import relationship
@@ -13,6 +13,21 @@ log = __import__('logging').getLogger(__name__)
 Base = declarative_base()
 
 
+# TODO: The package stats methods are a bit messed up, they could be organized better
+# For example:
+# visits, downloads, entrances on dataset (dates separated)
+# - by time frame
+# - in total
+#
+# Total visits, downloads, entrances by single dataset (dates combined)
+# - On time frame
+# - All time total
+#
+# And top / worst downloaded/visited/entered datasets
+# - by timespan
+# - in total
+#
+# and then the others: name by id, updating individual fields, get latest update
 class PackageStats(Base):
     """
     Contains stats for package (datasets)
@@ -100,7 +115,14 @@ class PackageStats(Base):
         return cls.convert_to_dict(package_visits, None)
 
     @classmethod
-    def get_total_visits(cls, start_date, end_date, limit=50, descending=True):
+    def get_total_visits(
+        cls,
+        start_date=date(2000, 1, 1),
+        end_date=datetime.today(),
+        limit=50,
+        descending=True,
+        package_id=None
+    ):
         '''
         Returns datasets and their visitors amount summed during time span, grouped by dataset.
 
@@ -114,14 +136,17 @@ class PackageStats(Base):
             else:
                 return value
 
-        visits_by_dataset = (
-            model.Session.query(
-                cls.package_id,
-                func.sum(cls.visits).label('total_visits'),
-                func.sum(cls.downloads).label('total_downloads'),
-                func.sum(cls.entrances).label('total_entrances')
-            )
-            .join(model.Package, cls.package_id == model.Package.id)
+        query = model.Session.query(
+            cls.package_id,
+            func.sum(cls.visits).label('total_visits'),
+            func.sum(cls.downloads).label('total_downloads'),
+            func.sum(cls.entrances).label('total_entrances')
+        )
+
+        if package_id:
+            query = query.filter(cls.package_id == package_id)
+
+        visits_by_dataset = (query.join(model.Package, cls.package_id == model.Package.id)
             .filter(model.Package.state == 'active')
             .filter(model.Package.private == False)  # noqa: E712
             .filter(cls.visit_date >= start_date)
@@ -129,8 +154,7 @@ class PackageStats(Base):
             .group_by(cls.package_id)
             .order_by(sorting_direction(func.sum(cls.visits), descending))
             .limit(limit)
-            .all()
-            )
+            .all())
 
         datasets = []
         for dataset in visits_by_dataset:
