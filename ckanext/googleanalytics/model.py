@@ -661,7 +661,17 @@ class AudienceLocationDate(Base):
         return cls.convert_list_to_dicts(data)
 
     @classmethod
-    def get_total_visits(cls, start_date, end_date):
+    def get_first_date(cls, start_date=None, end_date=None):
+        query = model.Session.query(func.min(cls.date))
+        if start_date is not None:
+            query = query.filter(cls.date >= start_date)
+        if end_date is not None:
+            query = query.filter(cls.date <= end_date)
+        result = query.one_or_none()
+        return result[0] if result is not None else None
+
+    @classmethod
+    def get_total_visits(cls, start_date=None, end_date=None):
         '''
         Returns the total amount of visits on the website
         from the start date to the end date
@@ -671,12 +681,14 @@ class AudienceLocationDate(Base):
             total_visits
         }
         '''
-        total_visits = model.Session.query(func.sum(cls.visits)) \
-            .filter(cls.date >= start_date) \
-            .filter(cls.date <= end_date) \
-            .scalar()
+        total_visits = model.Session.query(func.sum(cls.visits))
 
-        return {"total_visits": total_visits}
+        if start_date is not None:
+            total_visits = total_visits.filter(cls.date >= start_date)
+        if end_date is not None:
+            total_visits = total_visits.filter(cls.date <= end_date)
+
+        return {"total_visits": total_visits.scalar()}
 
     @classmethod
     def get_total_visits_by_location(cls, start_date, end_date, location_name):
@@ -731,7 +743,17 @@ class AudienceLocationDate(Base):
             .limit(limit) \
             .all()
 
-        return cls.convert_list_to_dicts(locations)
+        result = cls.convert_list_to_dicts(locations)
+        all_visits = AudienceLocationDate.get_total_visits().get('total_visits', 0)
+        result.append({
+            'location_name': 'Other',
+            'total_visits': all_visits - sum(x.get('total_visits', 0) for x in result)
+        })
+
+        for r in result:
+            r['percent_visits'] = 100.0 * r.get('total_visits', 0.0) / all_visits
+
+        return result
 
     @classmethod
     def special_total_location_to_rest(cls, start_date, end_date, location):
