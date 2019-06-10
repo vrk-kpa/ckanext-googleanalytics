@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ckanext-googleanalytics 0.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-03-28 15:15+0000\n"
+"POT-Creation-Date: 2019-06-10 11:25+0000\n"
 "PO-Revision-Date: 2019-03-12 11:48+0000\n"
 "Language-Team: English (United Kingdom) (https://www.transifex.com/avoindata/teams/7979/en_GB/)\n"
 "MIME-Version: 1.0\n"
@@ -38,7 +38,7 @@ msgid "Number views (since recording started)"
 msgstr ""
 
 #: ckanext/googleanalytics/templates/report/analytics.html:19
-#: ckanext/googleanalytics/templates/report/dataset_analytics.html:35
+#: ckanext/googleanalytics/templates/report/dataset_analytics.html:23
 msgid "No analytics found for most downloaded datasets."
 msgstr ""
 
@@ -67,18 +67,22 @@ msgid "No statistics found for most downloaded resources."
 msgstr ""
 
 #: ckanext/googleanalytics/templates/report/dataset_analytics.html:7
+#: ckanext/googleanalytics/templates/report/organization_analytics.html:7
 msgid "Total views"
 msgstr ""
 
 #: ckanext/googleanalytics/templates/report/dataset_analytics.html:8
+#: ckanext/googleanalytics/templates/report/organization_analytics.html:8
 msgid "Initial entrance"
 msgstr ""
 
 #: ckanext/googleanalytics/templates/report/dataset_analytics.html:9
+#: ckanext/googleanalytics/templates/report/organization_analytics.html:9
 msgid "Entrances of total views"
 msgstr ""
 
 #: ckanext/googleanalytics/templates/report/dataset_analytics.html:10
+#: ckanext/googleanalytics/templates/report/organization_analytics.html:10
 msgid "Downloads"
 msgstr ""
 
@@ -107,15 +111,23 @@ msgstr ""
 msgid "Audience locations"
 msgstr ""
 
-#: ckanext/googleanalytics/templates/report/location_analytics.html:75
-msgid "Countries"
+#: ckanext/googleanalytics/templates/report/location_analytics.html:72
+msgid "Collected since"
 msgstr ""
 
 #: ckanext/googleanalytics/templates/report/location_analytics.html:76
+msgid "Countries"
+msgstr ""
+
+#: ckanext/googleanalytics/templates/report/location_analytics.html:77
 msgid "Sessions (since recording started)"
 msgstr ""
 
-#: ckanext/googleanalytics/templates/report/location_analytics.html:86
+#: ckanext/googleanalytics/templates/report/location_analytics.html:78
+msgid "Sessions (%)"
+msgstr ""
+
+#: ckanext/googleanalytics/templates/report/location_analytics.html:89
 msgid "No statistics found for audience locations."
 msgstr ""
 
@@ -127,6 +139,34 @@ msgstr ""
 msgid "Timespan for records"
 msgstr ""
 
+#: ckanext/googleanalytics/templates/report/organization_analytics.html:2
+msgid "Organizations with most viewed datasets"
+msgstr ""
+
+#: ckanext/googleanalytics/templates/report/organization_analytics.html:6
+msgid "Organization"
+msgstr ""
+
+#: ckanext/googleanalytics/templates/report/organization_analytics.html:23
+msgid "No analytics found for organizations with most visited datasets."
+msgstr ""
+
 #: ckanext/googleanalytics/templates/report/resource_analytics.html:7
 msgid "Last accessed date"
+msgstr ""
+
+#: ckanext/googleanalytics/templates/report/search_term_analytics.html:2
+msgid "Most popular search terms"
+msgstr ""
+
+#: ckanext/googleanalytics/templates/report/search_term_analytics.html:6
+msgid "Search term"
+msgstr ""
+
+#: ckanext/googleanalytics/templates/report/search_term_analytics.html:7
+msgid "Total searches"
+msgstr ""
+
+#: ckanext/googleanalytics/templates/report/search_term_analytics.html:17
+msgid "No analytics found for most popular search terms"
 msgstr ""

@@ -151,10 +151,13 @@ def google_analytics_location_report():
 
     data_for_export = AudienceLocationDate.special_total_by_months(datetime(2000, 1, 1), last_month_end)
 
+    first_date = AudienceLocationDate.get_first_date()
+
     # first item in table list will be available for export
     return {
         'table': data_for_export,
         'data': {
+            'first_date': first_date.date().isoformat() if first_date is not None else '-',
             'top_locations': top_locations,
             'finland_vs_world_last_month': finland_vs_world_last_month,
             'finland_vs_world_all': finland_vs_world_all,

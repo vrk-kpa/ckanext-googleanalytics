@@ -69,16 +69,19 @@
 <hr class="page-break">
 <div>
   <h2>{% trans %}Audience locations{% endtrans %}</h2> 
+  <p>{% trans %}Collected since{% endtrans %} {{ h.render_datetime(data['data']['first_date']) }}</p>
   {% if data['data']['top_locations'] %}
     <table class="table table-condensed table-bordered table-striped">
       <tr>
         <th>{% trans %}Countries{% endtrans %}</th>
         <th>{% trans %}Sessions (since recording started){% endtrans %}</th>
+        <th>{% trans %}Sessions{% endtrans %} (%)</th>
       </tr>
       {% for toplocation in data['data']['top_locations'] %}
         <tr>
-          <td>{{ toplocation.location_name }}</td>
+          <td>{{ _(toplocation.location_name) }}</td>
           <td>{{ toplocation.total_visits }}</td>
+          <td>{{ toplocation.percent_visits|round(2) }} %</td>
         </tr>
       {% endfor %}
     </table>
