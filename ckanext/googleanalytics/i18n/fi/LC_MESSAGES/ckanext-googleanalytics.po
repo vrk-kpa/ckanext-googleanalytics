@@ -7,6 +7,7 @@
 # Translators:
 # Aaron Hakala <aaron.hakala@gofore.com>, 2019
 # Teemu Erkkola <teemu.erkkola@iki.fi>, 2019
+# Jonna Jantunen <jonna.jantunen@vrk.fi>, 2019
 # 
 #, fuzzy
 msgid ""
@@ -15,7 +16,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2019-06-10 11:25+0000\n"
 "PO-Revision-Date: 2019-03-12 11:48+0000\n"
-"Last-Translator: Teemu Erkkola <teemu.erkkola@iki.fi>, 2019\n"
+"Last-Translator: Jonna Jantunen <jonna.jantunen@vrk.fi>, 2019\n"
 "Language-Team: Finnish (https://www.transifex.com/avoindata/teams/7979/fi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -27,7 +28,7 @@ msgstr ""
 #: ckanext/googleanalytics/templates/report/analytics.html:2
 #: ckanext/googleanalytics/templates/report/dataset_analytics.html:2
 msgid "Most viewed datasets"
-msgstr "Eniten vierailtu tietoaineistot"
+msgstr "Eniten katsotut tietoaineistot"
 
 #: ckanext/googleanalytics/templates/report/analytics.html:6
 #: ckanext/googleanalytics/templates/report/dataset_analytics.html:6
@@ -36,11 +37,11 @@ msgstr "Tietoaineisto"
 
 #: ckanext/googleanalytics/templates/report/analytics.html:7
 msgid "Last accessed day"
-msgstr "Viimeksi vierailtu päivä"
+msgstr "Viimeksi katsottu"
 
 #: ckanext/googleanalytics/templates/report/analytics.html:8
 msgid "Number views (since recording started)"
-msgstr "Vierailu kertoja (seurannan alusta alkaen)"
+msgstr "Katsomiskertoja (seurannan alusta alkaen)"
 
 #: ckanext/googleanalytics/templates/report/analytics.html:19
 #: ckanext/googleanalytics/templates/report/dataset_analytics.html:23
@@ -69,7 +70,7 @@ msgstr "Latauksia (seurannan alusta alkaen)"
 #: ckanext/googleanalytics/templates/report/analytics.html:42
 #: ckanext/googleanalytics/templates/report/resource_analytics.html:21
 msgid "No statistics found for most downloaded resources."
-msgstr "Statistiikkaa ei löytynyt eniten ladatuista aineistolinkeistä."
+msgstr "Ei statistiikkaa eniten ladatuista aineistolinkeistä."
 
 #: ckanext/googleanalytics/templates/report/dataset_analytics.html:7
 #: ckanext/googleanalytics/templates/report/organization_analytics.html:7
@@ -79,7 +80,7 @@ msgstr "Katsomiskertoja yhteensä"
 #: ckanext/googleanalytics/templates/report/dataset_analytics.html:8
 #: ckanext/googleanalytics/templates/report/organization_analytics.html:8
 msgid "Initial entrance"
-msgstr "Linkin kautta tuloja"
+msgstr "Linkin kautta saapuneita"
 
 #: ckanext/googleanalytics/templates/report/dataset_analytics.html:9
 #: ckanext/googleanalytics/templates/report/organization_analytics.html:9
@@ -134,11 +135,11 @@ msgstr "Sessioita (%)"
 
 #: ckanext/googleanalytics/templates/report/location_analytics.html:89
 msgid "No statistics found for audience locations."
-msgstr "Statistiikkaa ei löytynyt vierailijoiden sijainneista."
+msgstr "Ei statistiikkaa vierailijoiden sijainneista."
 
 #: ckanext/googleanalytics/templates/report/option_last.html:9
 msgid "Records to be shown:"
-msgstr "Näytettävän datan määrä"
+msgstr "Näytettävän datan määrä:"
 
 #: ckanext/googleanalytics/templates/report/option_time.html:9
 msgid "Timespan for records"
@@ -147,31 +148,34 @@ msgstr "Datan aikaväli"
 #: ckanext/googleanalytics/templates/report/organization_analytics.html:2
 msgid "Organizations with most viewed datasets"
 msgstr ""
+"Suosituimmat organisaatiot tietoaineistojen katsomiskertojen perusteella"
 
 #: ckanext/googleanalytics/templates/report/organization_analytics.html:6
 msgid "Organization"
-msgstr ""
+msgstr "Organisaatio"
 
 #: ckanext/googleanalytics/templates/report/organization_analytics.html:23
 msgid "No analytics found for organizations with most visited datasets."
 msgstr ""
+"Ei analytiikkaa suosituimmista organisaatioista tietoaineistojen "
+"katsomiskertojen perusteella."
 
 #: ckanext/googleanalytics/templates/report/resource_analytics.html:7
 msgid "Last accessed date"
-msgstr "Viimeksi vierailtu päivä"
+msgstr "Viimeksi katsottu"
 
 #: ckanext/googleanalytics/templates/report/search_term_analytics.html:2
 msgid "Most popular search terms"
-msgstr ""
+msgstr "Suosituimmat hakusanat"
 
 #: ckanext/googleanalytics/templates/report/search_term_analytics.html:6
 msgid "Search term"
-msgstr ""
+msgstr "Hakusana"
 
 #: ckanext/googleanalytics/templates/report/search_term_analytics.html:7
 msgid "Total searches"
-msgstr ""
+msgstr "Hakujen määrä"
 
 #: ckanext/googleanalytics/templates/report/search_term_analytics.html:17
 msgid "No analytics found for most popular search terms"
-msgstr ""
+msgstr "Ei analytiikkaa suosituimmista hakusanoista."
