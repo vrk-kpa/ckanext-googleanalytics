@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ckanext-googleanalytics 0.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-06-10 11:25+0000\n"
+"POT-Creation-Date: 2019-07-31 10:46+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,1042 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.3.4\n"
+
+#: ckanext/googleanalytics/translations.py:8
+msgid "Least popular datasets"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:9
+msgid "Most popular datasets"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:10
+msgid "Most popular organizations"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:11
+msgid "Most popular resources"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:12
+msgid "Google analytics showing most audience locations (bot traffic is filtered out)"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:13
+msgid "Google analytics showing top datasets with least views"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:14
+msgid "Google analytics showing top datasets with most views"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:15
+msgid "Google analytics showing most popular organizations by visited datasets"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:16
+msgid "Google analytics showing most downloaded resources"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:17
+msgid "Google analytics showing most popular search terms"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:18
+msgid "Andorra"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:19
+msgid "United Arab Emirates"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:20
+msgid "Afghanistan"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:21
+msgid "Antigua and Barbuda"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:22
+msgid "Anguilla"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:23
+msgid "Albania"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:24
+msgid "Armenia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:25
+msgid "Angola"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:26
+msgid "Antarctica"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:27
+msgid "Argentina"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:28
+msgid "American Samoa"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:29
+msgid "Austria"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:30
+msgid "Australia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:31
+msgid "Aruba"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:32
+msgid "Åland Islands"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:33
+msgid "Azerbaijan"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:34
+msgid "Bosnia and Herzegovina"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:35
+msgid "Barbados"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:36
+msgid "Bangladesh"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:37
+msgid "Belgium"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:38
+msgid "Burkina Faso"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:39
+msgid "Bulgaria"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:40
+msgid "Bahrain"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:41
+msgid "Burundi"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:42
+msgid "Benin"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:43
+msgid "Saint Barthélemy"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:44
+msgid "Bermuda"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:45
+msgid "Brunei Darussalam"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:46
+msgid "Bolivia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:47
+msgid "Caribbean Netherlands "
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:48
+msgid "Brazil"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:49
+msgid "Bahamas"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:50
+msgid "Bhutan"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:51
+msgid "Bouvet Island"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:52
+msgid "Botswana"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:53
+msgid "Belarus"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:54
+msgid "Belize"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:55
+msgid "Canada"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:56
+msgid "Cocos (Keeling) Islands"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:57
+msgid "Congo, Democratic Republic of"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:58
+msgid "Central African Republic"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:59
+msgid "Congo"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:60
+msgid "Switzerland"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:61
+msgid "Côte d'Ivoire"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:62
+msgid "Cook Islands"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:63
+msgid "Chile"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:64
+msgid "Cameroon"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:65
+msgid "China"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:66
+msgid "Colombia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:67
+msgid "Costa Rica"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:68
+msgid "Cuba"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:69
+msgid "Cape Verde"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:70
+msgid "Curaçao"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:71
+msgid "Christmas Island"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:72
+msgid "Cyprus"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:73
+msgid "Czech Republic"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:74
+msgid "Germany"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:75
+msgid "Djibouti"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:76
+msgid "Denmark"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:77
+msgid "Dominica"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:78
+msgid "Dominican Republic"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:79
+msgid "Algeria"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:80
+msgid "Ecuador"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:81
+msgid "Estonia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:82
+msgid "Egypt"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:83
+msgid "Western Sahara"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:84
+msgid "Eritrea"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:85
+msgid "Spain"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:86
+msgid "Ethiopia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:87
+msgid "Finland"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:88
+msgid "Fiji"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:89
+msgid "Falkland Islands"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:90
+msgid "Micronesia, Federated States of"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:91
+msgid "Faroe Islands"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:92
+msgid "France"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:93
+msgid "Gabon"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:94
+msgid "United Kingdom"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:95
+msgid "Grenada"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:96
+msgid "Georgia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:97
+msgid "French Guiana"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:98
+msgid "Guernsey"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:99
+msgid "Ghana"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:100
+msgid "Gibraltar"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:101
+msgid "Greenland"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:102
+msgid "Gambia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:103
+msgid "Guinea"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:104
+msgid "Guadeloupe"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:105
+msgid "Equatorial Guinea"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:106
+msgid "Greece"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:107
+msgid "South Georgia and the South Sandwich Islands"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:108
+msgid "Guatemala"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:109
+msgid "Guam"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:110
+msgid "Guinea-Bissau"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:111
+msgid "Guyana"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:112
+msgid "Hong Kong"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:113
+msgid "Heard and McDonald Islands"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:114
+msgid "Honduras"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:115
+msgid "Croatia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:116
+msgid "Haiti"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:117
+msgid "Hungary"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:118
+msgid "Indonesia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:119
+msgid "Ireland"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:120
+msgid "Israel"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:121
+msgid "Isle of Man"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:122
+msgid "India"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:123
+msgid "British Indian Ocean Territory"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:124
+msgid "Iraq"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:125
+msgid "Iran"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:126
+msgid "Iceland"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:127
+msgid "Italy"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:128
+msgid "Jersey"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:129
+msgid "Jamaica"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:130
+msgid "Jordan"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:131
+msgid "Japan"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:132
+msgid "Kenya"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:133
+msgid "Kyrgyzstan"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:134
+msgid "Cambodia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:135
+msgid "Kiribati"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:136
+msgid "Comoros"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:137
+msgid "Saint Kitts and Nevis"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:138
+msgid "North Korea"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:139
+msgid "South Korea"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:140
+msgid "Kuwait"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:141
+msgid "Cayman Islands"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:142
+msgid "Kazakhstan"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:143
+msgid "Lao People's Democratic Republic"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:144
+msgid "Lebanon"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:145
+msgid "Saint Lucia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:146
+msgid "Liechtenstein"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:147
+msgid "Sri Lanka"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:148
+msgid "Liberia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:149
+msgid "Lesotho"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:150
+msgid "Lithuania"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:151
+msgid "Luxembourg"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:152
+msgid "Latvia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:153
+msgid "Libya"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:154
+msgid "Morocco"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:155
+msgid "Monaco"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:156
+msgid "Moldova"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:157
+msgid "Montenegro"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:158
+msgid "Saint-Martin (France)"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:159
+msgid "Madagascar"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:160
+msgid "Marshall Islands"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:161
+msgid "Macedonia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:162
+msgid "Mali"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:163
+msgid "Myanmar"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:164
+msgid "Mongolia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:165
+msgid "Macau"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:166
+msgid "Northern Mariana Islands"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:167
+msgid "Martinique"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:168
+msgid "Mauritania"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:169
+msgid "Montserrat"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:170
+msgid "Malta"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:171
+msgid "Mauritius"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:172
+msgid "Maldives"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:173
+msgid "Malawi"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:174
+msgid "Mexico"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:175
+msgid "Malaysia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:176
+msgid "Mozambique"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:177
+msgid "Namibia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:178
+msgid "New Caledonia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:179
+msgid "Niger"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:180
+msgid "Norfolk Island"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:181
+msgid "Nigeria"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:182
+msgid "Nicaragua"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:183
+msgid "The Netherlands"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:184
+msgid "Norway"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:185
+msgid "Nepal"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:186
+msgid "Nauru"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:187
+msgid "Niue"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:188
+msgid "New Zealand"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:189
+msgid "Oman"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:190
+msgid "Panama"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:191
+msgid "Peru"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:192
+msgid "French Polynesia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:193
+msgid "Papua New Guinea"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:194
+msgid "Philippines"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:195
+msgid "Pakistan"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:196
+msgid "Poland"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:197
+msgid "St. Pierre and Miquelon"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:198
+msgid "Pitcairn"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:199
+msgid "Puerto Rico"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:200
+msgid "Palestine, State of"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:201
+msgid "Portugal"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:202
+msgid "Palau"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:203
+msgid "Paraguay"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:204
+msgid "Qatar"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:205
+msgid "Réunion"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:206
+msgid "Romania"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:207
+msgid "Serbia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:208
+msgid "Russian Federation"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:209
+msgid "Rwanda"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:210
+msgid "Saudi Arabia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:211
+msgid "Solomon Islands"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:212
+msgid "Seychelles"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:213
+msgid "Sudan"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:214
+msgid "Sweden"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:215
+msgid "Singapore"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:216
+msgid "Saint Helena"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:217
+msgid "Slovenia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:218
+msgid "Svalbard and Jan Mayen Islands"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:219
+msgid "Slovakia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:220
+msgid "Sierra Leone"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:221
+msgid "San Marino"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:222
+msgid "Senegal"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:223
+msgid "Somalia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:224
+msgid "Suriname"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:225
+msgid "South Sudan"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:226
+msgid "Sao Tome and Principe"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:227
+msgid "El Salvador"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:228
+msgid "Sint Maarten (Dutch part)"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:229
+msgid "Syria"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:230
+msgid "Swaziland"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:231
+msgid "Turks and Caicos Islands"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:232
+msgid "Chad"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:233
+msgid "French Southern Territories"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:234
+msgid "Togo"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:235
+msgid "Thailand"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:236
+msgid "Tajikistan"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:237
+msgid "Tokelau"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:238
+msgid "Timor-Leste"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:239
+msgid "Turkmenistan"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:240
+msgid "Tunisia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:241
+msgid "Tonga"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:242
+msgid "Turkey"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:243
+msgid "Trinidad and Tobago"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:244
+msgid "Tuvalu"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:245
+msgid "Taiwan"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:246
+msgid "Tanzania"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:247
+msgid "Ukraine"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:248
+msgid "Uganda"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:249
+msgid "United States Minor Outlying Islands"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:250
+msgid "United States"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:251
+msgid "Uruguay"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:252
+msgid "Uzbekistan"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:253
+msgid "Vatican"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:254
+msgid "Saint Vincent and the Grenadines"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:255
+msgid "Venezuela"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:256
+msgid "Virgin Islands (British)"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:257
+msgid "Virgin Islands (U.S.)"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:258
+msgid "Vietnam"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:259
+msgid "Vanuatu"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:260
+msgid "Wallis and Futuna Islands"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:261
+msgid "Samoa"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:262
+msgid "Yemen"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:263
+msgid "Mayotte"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:264
+msgid "South Africa"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:265
+msgid "Zambia"
+msgstr ""
+
+#: ckanext/googleanalytics/translations.py:266
+msgid "Zimbabwe"
+msgstr ""
 
 #: ckanext/googleanalytics/templates/report/analytics.html:2
 #: ckanext/googleanalytics/templates/report/dataset_analytics.html:2
@@ -94,6 +1130,7 @@ msgid "Dates"
 msgstr ""
 
 #: ckanext/googleanalytics/templates/report/location_analytics.html:39
+#: ckanext/googleanalytics/templates/report/location_analytics.html:78
 msgid "Sessions"
 msgstr ""
 
@@ -120,10 +1157,6 @@ msgstr ""
 
 #: ckanext/googleanalytics/templates/report/location_analytics.html:77
 msgid "Sessions (since recording started)"
-msgstr ""
-
-#: ckanext/googleanalytics/templates/report/location_analytics.html:78
-msgid "Sessions (%)"
 msgstr ""
 
 #: ckanext/googleanalytics/templates/report/location_analytics.html:89
