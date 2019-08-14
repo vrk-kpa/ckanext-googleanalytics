@@ -189,16 +189,19 @@ class PackageStats(Base):
         return package_visits
 
     @classmethod
-    def get_last_visits_by_id(cls, resource_id, num_days=30):
+    def get_last_visits_by_id(cls, package_id, num_days=30):
         start_date = datetime.now() - timedelta(num_days)
-        package_visits = model.Session.query(cls).filter(cls.package_id == resource_id).filter(
+        package_visits = model.Session.query(cls).filter(cls.package_id == package_id).filter(
             cls.visit_date >= start_date).all()
-        # Returns the total number of visits since the beggining of all times
-        total_visits = model.Session.query(func.sum(cls.visits)).filter(cls.package_id == resource_id).scalar()
+        # Returns the total number of visits since the beginning of all times
+        total_visits = model.Session.query(func.sum(cls.visits)).filter(cls.package_id == package_id).scalar()
         visits = {}
 
         if total_visits is not None:
             visits = PackageStats.convert_to_dict(package_visits, total_visits)
+
+        total_downloads = model.Session.query(func.sum(cls.downloads)).filter(cls.package_id == package_id).scalar()
+        visits['total_downloads'] = total_downloads if total_downloads else 0
 
         return visits
 
@@ -236,14 +239,10 @@ class PackageStats(Base):
     def get_all_visits(cls, dataset_id):
 
         visits_dict = PackageStats.get_last_visits_by_id(dataset_id)
-        resource_visits_dict = ResourceStats.get_last_visits_by_dataset_id(dataset_id)
 
         visit_list = []
         visits = visits_dict.get('packages', [])
         count = visits_dict.get('tot_visits', 0)
-
-        resource_visits = resource_visits_dict.get('resources', 0)
-        download_count = resource_visits_dict.get('tot_visits', 0)
 
         now = datetime.now() - timedelta(days=1)
 
@@ -262,42 +261,32 @@ class PackageStats(Base):
                                        'day'] == visit_date.day), None)
                 if visit_item:
                     visit_item['visits'] = t['visits']
-
-        for r in resource_visits:
-            visit_date_str = r['visit_date']
-            if visit_date_str is not None:
-                visit_date = datetime.strptime(visit_date_str, "%d-%m-%Y")
-                # Build temporary match
-                visit_item = next((x for x in visit_list if
-                                   x['year'] == visit_date.year and x['month'] == visit_date.month and x[
-                                       'day'] == visit_date.day), None)
-                if visit_item:
-                    visit_item['downloads'] += r['visits']
+                    visit_item['downloads'] = t['downloads']
 
         results = {
             "visits": visit_list,
             "count": count,
-            "download_count": download_count
+            "download_count": visits_dict['total_downloads']
         }
         return results
 
     @classmethod
-    def as_dict(cls, res):
+    def as_dict(cls, pkg):
         result = {}
-        package_name = PackageStats.get_package_name_by_id(res.package_id)
+        package_name = PackageStats.get_package_name_by_id(pkg.package_id)
         result['package_name'] = package_name
-        result['package_id'] = res.package_id
-        result['visits'] = res.visits
-        result['entrances'] = res.entrances
-        result['downloads'] = res.downloads
-        result['visit_date'] = res.visit_date.strftime("%d-%m-%Y")
+        result['package_id'] = pkg.package_id
+        result['visits'] = pkg.visits
+        result['entrances'] = pkg.entrances
+        result['downloads'] = pkg.downloads
+        result['visit_date'] = pkg.visit_date.strftime("%d-%m-%Y")
         return result
 
     @classmethod
-    def convert_to_dict(cls, resource_stats, tot_visits):
+    def convert_to_dict(cls, package_stats, tot_visits):
         visits = []
-        for resource in resource_stats:
-            visits.append(PackageStats.as_dict(resource))
+        for pkg in package_stats:
+            visits.append(PackageStats.as_dict(pkg))
 
         results = {
             "packages": visits,
